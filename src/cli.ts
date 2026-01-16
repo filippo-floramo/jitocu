@@ -1,9 +1,7 @@
-#!/usr/bin/env bun
 import { Command } from "commander";
-import { fetchMyJiraIssues } from "./clients/jira";
-import { createClickUpTask, getSharedFolders } from "./clients/clickUp";
+import { createJiraClient, type JiraIssueChoice } from "./clients/jira";
+import { createClickUpClient, type ClickUpFolder } from "./clients/clickUp";
 import { select } from "@inquirer/prompts";
-import type { JiraIssueChoice, ClickUpFolder } from "./types";
 import checkboxPlusPrompt from "inquirer-checkbox-plus-plus";
 import ora from "ora";
 import fuzzy from 'fuzzy';
@@ -33,10 +31,13 @@ program
       process.exit(1);
     }
 
+    const jiraClient = createJiraClient();
+    const clickUpClient = createClickUpClient();
+
     const jiraSpinner = ora("Fetching Jira issues...").start();
     let jiraIssues: JiraIssueChoice[];
     try {
-      jiraIssues = await fetchMyJiraIssues();
+      jiraIssues = await jiraClient.fetchMyJiraIssues();
       jiraSpinner.succeed("Jira issues loaded");
     } catch (error) {
       jiraSpinner.fail("Failed to fetch Jira issues");
@@ -65,7 +66,7 @@ program
     const foldersSpinner = ora("Fetching ClickUp folders...").start();
     let folders: ClickUpFolder[];
     try {
-      folders = await getSharedFolders(process.env.CLICKUP_WORKSPACE_ID!);
+      folders = await clickUpClient.getSharedFolders();
       foldersSpinner.succeed("ClickUp folders loaded");
     } catch (error) {
       foldersSpinner.fail("Failed to fetch ClickUp folders");
@@ -92,7 +93,7 @@ program
     for (const ans of answers) {
       const taskSpinner = ora(`Creating task: ${ans}`).start();
       try {
-        await createClickUpTask(ans, selectedListId);
+        await clickUpClient.createTask(ans, selectedListId);
         taskSpinner.succeed(`Task created: ${ans}`);
       } catch (error) {
         taskSpinner.fail(`Failed to create task: ${ans}`);
