@@ -1,0 +1,5 @@
+export { getSettingsAction } from "./get"
+export { setSettingsAction } from "./set"
+export { clearAllAction } from "./clear"
+export { listSettingsAction } from "./list"
+export { mainConfigAction } from "./main"
