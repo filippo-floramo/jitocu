@@ -8,7 +8,6 @@ class ClickUpAPICLient {
 
    constructor() { }
 
-
    public async createTask(issue: string, listId: string): Promise<ClickUpTask> {
       const user = await this.getAuthorizedUser();
 
@@ -38,7 +37,7 @@ class ClickUpAPICLient {
             throw new Error(`ClickUp API error (${response.status}): ${error}`);
          }
 
-         const data: ClickUpTask = await response.json();
+         const data = await response.json() as ClickUpTask
          return data;
       } catch (error) {
          if (error instanceof Error) {
@@ -65,7 +64,7 @@ class ClickUpAPICLient {
             throw new Error(`ClickUp API error (${response.status}): ${response.statusText}`);
          }
 
-         const data = await response.json();
+         const data = await response.json() as any;
 
          return data.shared.folders.map((folder: any): ClickUpFolder => ({
             id: folder.id,
@@ -106,7 +105,7 @@ class ClickUpAPICLient {
             throw new Error(`ClickUp API error (${response.status}): ${response.statusText}`);
          }
 
-         const data = await response.json();
+         const data = await response.json() as any;
 
          this.cachedUser = data.user
 

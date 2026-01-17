@@ -34,7 +34,7 @@ class JiraAPIClient {
             throw new Error(`Jira API error (${response.status}): ${error}`);
          }
 
-         const data: JiraSearchResponse = await response.json();
+         const data = await response.json() as JiraSearchResponse;
 
          return data.issues.map((issue): JiraIssueChoice => ({
             name: `${issue.key} - ${issue.fields.summary}`,
