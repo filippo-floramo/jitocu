@@ -1,2 +1,2 @@
-export { createJiraClient } from "./client";
+export * from "./jiraClient";
 export * from "./types"

@@ -2,6 +2,7 @@ import JsonStore from '../../store/JSONStore';
 import type { ClickUpTask, ClickUpCreateTaskRequest, ClickUpFolder, ClickUpUser } from './types';
 
 class ClickUpAPICLient {
+   public static instance: ClickUpAPICLient
    private workspaceId: string | undefined;
    private apiToken: string | undefined;
    private baseUrl: string = "https://api.clickup.com/api/v2"
@@ -14,6 +15,16 @@ class ClickUpAPICLient {
 
    public async initialize(): Promise<void> {
       await this.setUpConfig();
+   }
+
+   public static async getInstance(store: JsonStore): Promise<ClickUpAPICLient> {
+      if (!ClickUpAPICLient.instance) {
+         const newCLient = new ClickUpAPICLient(store);
+         await newCLient.initialize();
+
+         ClickUpAPICLient.instance = newCLient
+      }
+      return ClickUpAPICLient.instance
    }
 
    public async createTask(issue: string, listId: string): Promise<ClickUpTask> {
@@ -134,8 +145,7 @@ class ClickUpAPICLient {
 }
 
 
-export async function createClickUpClient(store: JsonStore) {
-   const client = new ClickUpAPICLient(store);
-   await client.initialize();
+export async function getClickUpClient(store: JsonStore) {
+   const client = await ClickUpAPICLient.getInstance(store);
    return client;
 }

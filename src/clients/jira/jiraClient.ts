@@ -2,6 +2,7 @@ import JsonStore from "../../store/JSONStore";
 import type { JiraSearchResponse, JiraIssueChoice } from "./types";
 
 class JiraAPIClient {
+   public static instance: JiraAPIClient
    private domain: string | undefined;
    private email: string | undefined;
    private apiToken: string | undefined;
@@ -18,6 +19,16 @@ class JiraAPIClient {
       this.email = await this.store.getPath("settings.jira.email");
       this.apiToken = await this.store.getPath("settings.jira.apiToken");
       this.baseUrl = `https://${this.domain}/rest/api/3`;
+   }
+
+   public static async getInstance(store: JsonStore): Promise<JiraAPIClient> {
+      if (!JiraAPIClient.instance) {
+         const newClient = new JiraAPIClient(store);
+         await newClient.initialize();
+
+         JiraAPIClient.instance = newClient
+      }
+      return JiraAPIClient.instance
    }
 
    public async fetchMyJiraIssues(): Promise<JiraIssueChoice[]> {
@@ -61,8 +72,7 @@ class JiraAPIClient {
 }
 
 
-export async function createJiraClient(store: JsonStore) {
-   const client = new JiraAPIClient(store);
-   await client.initialize();
+export async function getJiraClient(store: JsonStore) {
+   const client = await JiraAPIClient.getInstance(store);
    return client;
 }

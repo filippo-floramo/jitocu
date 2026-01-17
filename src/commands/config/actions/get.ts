@@ -1,10 +1,10 @@
 import chalk from "chalk";
-import JsonStore from "../../../store/JSONStore";
+import JsonStore, { getJSONStore } from "../../../store/JSONStore";
 import { validateSettingPath } from "../../../store/utils/validateSettingPath";
 import { baseSettingsPath } from "../../../store/constants";
 
 export async function getSettingsAction(path: string) {
-   const store = JsonStore.getInstance()
+   const store = getJSONStore()
 
    try {
       if (!validateSettingPath(path)) {

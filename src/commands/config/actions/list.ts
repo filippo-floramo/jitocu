@@ -1,7 +1,7 @@
-import JsonStore from "../../../store/JSONStore";
+import JsonStore, { getJSONStore } from "../../../store/JSONStore";
 
 export async function listSettingsAction() {
-   const store = JsonStore.getInstance()
+   const store = getJSONStore();
 
    const config = await store.getAll();
 

@@ -1,6 +1,7 @@
 import * as fs from 'fs/promises';
 import * as path from 'path';
 import type { DottedPaths, PathValue, Settings } from './types';
+import { file } from 'bun';
 
 interface AppData {
    settings?: Settings;
@@ -222,6 +223,10 @@ class JsonStore {
    clearCache(): void {
       this.cache = null;
    }
+}
+
+export function getJSONStore(filename?: string) {
+   return JsonStore.getInstance(filename)
 }
 
 export default JsonStore;

@@ -1,5 +1,5 @@
 import { baseSettingsPath } from "../constants";
-import JsonStore from "../JSONStore";
+import JsonStore, { getJSONStore } from "../JSONStore";
 import { MandatorySettingsPath } from "../types";
 
 
@@ -12,7 +12,7 @@ const mandatorySettingsPaths: MandatorySettingsPath[] = [
 ]
 
 export async function getMissingRequiredSettings(): Promise<MandatorySettingsPath[]> {
-   const store = JsonStore.getInstance();
+   const store = getJSONStore();
    let missing: MandatorySettingsPath[] = [];
 
    for (const path of mandatorySettingsPaths) {

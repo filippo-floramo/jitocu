@@ -1,2 +1,2 @@
-export { createClickUpClient } from "./client"
+export * from "./clickUpClient"
 export * from "./types"

@@ -1,7 +1,7 @@
 import { describe, test, expect, beforeEach, afterEach } from 'bun:test';
 import * as fs from 'fs/promises';
 import * as path from 'path';
-import JsonStore from '../src/store/JSONStore';
+import JsonStore, { getJSONStore } from '../src/store/JSONStore';
 
 
 describe('JsonStore', () => {
@@ -12,7 +12,7 @@ describe('JsonStore', () => {
       const testDir = path.dirname(testFilePath);
       await fs.mkdir(testDir, { recursive: true });
 
-      store = JsonStore.getInstance(testFilePath);
+      store = getJSONStore(testFilePath);
       store.clearCache();
    });
 
@@ -25,8 +25,8 @@ describe('JsonStore', () => {
 
    describe('Singleton Pattern', () => {
       test('should return the same instance', () => {
-         const instance1 = JsonStore.getInstance(testFilePath);
-         const instance2 = JsonStore.getInstance(testFilePath);
+         const instance1 = getJSONStore(testFilePath);
+         const instance2 = getJSONStore(testFilePath);
          expect(instance1).toBe(instance2);
       });
    });

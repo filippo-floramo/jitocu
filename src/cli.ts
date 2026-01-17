@@ -1,8 +1,8 @@
 #!/usr/bin/env bun
 
 import { Command } from "commander";
-import { createJiraClient, type JiraIssueChoice } from "./clients/jira";
-import { createClickUpClient, type ClickUpFolder } from "./clients/clickUp";
+import { getJiraClient, type JiraIssueChoice } from "./clients/jira";
+import { getClickUpClient, type ClickUpFolder } from "./clients/clickUp";
 import { select } from "@inquirer/prompts";
 import checkboxPlusPrompt from "inquirer-checkbox-plus-plus";
 import ora from "ora";
@@ -10,7 +10,7 @@ import fuzzy from 'fuzzy';
 import { createConfigCommand } from "./commands/config";
 import { getMissingRequiredSettings } from "./store/utils/getMissingRequiredSettings";
 import { showMissingSettignsPaths } from "./store/utils/showMissingSettingsPaths";
-import JsonStore from "./store/JSONStore";
+import JsonStore, { getJSONStore } from "./store/JSONStore";
 
 const program = new Command();
 
@@ -22,7 +22,7 @@ program
 program.addCommand(createConfigCommand())
 
 program.action(async () => {
-  const store = JsonStore.getInstance()
+  const store = getJSONStore()
 
   const missing = await getMissingRequiredSettings();
 
@@ -31,8 +31,8 @@ program.action(async () => {
     process.exit(1);
   }
 
-  const jiraClient = await createJiraClient(store);
-  const clickUpClient = await createClickUpClient(store);
+  const jiraClient = await getJiraClient(store);
+  const clickUpClient = await getClickUpClient(store);
 
   const jiraSpinner = ora("Fetching Jira issues...").start();
   let jiraIssues: JiraIssueChoice[];
