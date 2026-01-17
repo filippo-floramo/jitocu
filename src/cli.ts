@@ -10,6 +10,7 @@ import fuzzy from 'fuzzy';
 import { createConfigCommand } from "./commands/config";
 import { getMissingRequiredSettings } from "./store/utils/getMissingRequiredSettings";
 import { showMissingSettignsPaths } from "./store/utils/showMissingSettingsPaths";
+import JsonStore from "./store/JSONStore";
 
 const program = new Command();
 
@@ -21,6 +22,7 @@ program
 program.addCommand(createConfigCommand())
 
 program.action(async () => {
+  const store = JsonStore.getInstance()
 
   const missing = await getMissingRequiredSettings();
 
@@ -29,8 +31,8 @@ program.action(async () => {
     process.exit(1);
   }
 
-  const jiraClient = createJiraClient();
-  const clickUpClient = createClickUpClient();
+  const jiraClient = await createJiraClient(store);
+  const clickUpClient = await createClickUpClient(store);
 
   const jiraSpinner = ora("Fetching Jira issues...").start();
   let jiraIssues: JiraIssueChoice[];

@@ -1,12 +1,20 @@
+import JsonStore from '../../store/JSONStore';
 import type { ClickUpTask, ClickUpCreateTaskRequest, ClickUpFolder, ClickUpUser } from './types';
 
 class ClickUpAPICLient {
-   private workspaceId: string | undefined = process.env.CLICKUP_WORKSPACE_ID!
-   private apiToken: string | undefined = process.env.CLICKUP_API_TOKEN
+   private workspaceId: string | undefined;
+   private apiToken: string | undefined;
    private baseUrl: string = "https://api.clickup.com/api/v2"
    private cachedUser: ClickUpUser | null = null
+   private store: JsonStore;
 
-   constructor() { }
+   constructor(store: JsonStore) {
+      this.store = store;
+   }
+
+   public async initialize(): Promise<void> {
+      await this.setUpConfig();
+   }
 
    public async createTask(issue: string, listId: string): Promise<ClickUpTask> {
       const user = await this.getAuthorizedUser();
@@ -117,9 +125,17 @@ class ClickUpAPICLient {
          throw error;
       }
    }
+
+   private async setUpConfig() {
+      this.workspaceId = await this.store.getPath("settings.clickUp.workspaceId");
+      this.apiToken = await this.store.getPath("settings.clickUp.apiToken");
+   }
+
 }
 
 
-export function createClickUpClient() {
-   return new ClickUpAPICLient();
+export async function createClickUpClient(store: JsonStore) {
+   const client = new ClickUpAPICLient(store);
+   await client.initialize();
+   return client;
 }
