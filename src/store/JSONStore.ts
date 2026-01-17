@@ -7,8 +7,8 @@ interface AppData {
    settings?: Settings;
 }
 
-class JsonStore {
-   private static instance: JsonStore;
+class JSONStore {
+   private static instance: JSONStore;
    private filePath: string;
    private cache: AppData | null = null;
    private filename = "data/store.json"
@@ -23,11 +23,11 @@ class JsonStore {
       }
    }
 
-   public static getInstance(filename?: string): JsonStore {
-      if (!JsonStore.instance) {
-         JsonStore.instance = new JsonStore(filename)
+   public static getInstance(filename?: string): JSONStore {
+      if (!JSONStore.instance) {
+         JSONStore.instance = new JSONStore(filename)
       }
-      return JsonStore.instance
+      return JSONStore.instance
    }
 
    /**
@@ -226,7 +226,7 @@ class JsonStore {
 }
 
 export function getJSONStore(filename?: string) {
-   return JsonStore.getInstance(filename)
+   return JSONStore.getInstance(filename)
 }
 
-export default JsonStore;
+export type { JSONStore }

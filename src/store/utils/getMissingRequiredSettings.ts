@@ -1,5 +1,5 @@
 import { baseSettingsPath } from "../constants";
-import JsonStore, { getJSONStore } from "../JSONStore";
+import { getJSONStore } from "../JSONStore";
 import { MandatorySettingsPath } from "../types";
 
 

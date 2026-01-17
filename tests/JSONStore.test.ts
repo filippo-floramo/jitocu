@@ -1,11 +1,11 @@
 import { describe, test, expect, beforeEach, afterEach } from 'bun:test';
 import * as fs from 'fs/promises';
 import * as path from 'path';
-import JsonStore, { getJSONStore } from '../src/store/JSONStore';
+import { getJSONStore, type JSONStore } from '../src/store/JSONStore';
 
 
 describe('JsonStore', () => {
-   let store: JsonStore;
+   let store: JSONStore;
    const testFilePath = path.join(process.cwd(), 'data/test-store.json');
 
    beforeEach(async () => {

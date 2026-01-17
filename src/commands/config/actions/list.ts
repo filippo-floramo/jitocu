@@ -1,4 +1,4 @@
-import JsonStore, { getJSONStore } from "../../../store/JSONStore";
+import { getJSONStore } from "../../../store/JSONStore";
 
 export async function listSettingsAction() {
    const store = getJSONStore();

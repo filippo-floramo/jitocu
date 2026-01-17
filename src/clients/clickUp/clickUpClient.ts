@@ -1,4 +1,4 @@
-import JsonStore from '../../store/JSONStore';
+import { JSONStore } from '../../store/JSONStore';
 import type { ClickUpTask, ClickUpCreateTaskRequest, ClickUpFolder, ClickUpUser } from './types';
 
 class ClickUpAPICLient {
@@ -7,9 +7,9 @@ class ClickUpAPICLient {
    private apiToken: string | undefined;
    private baseUrl: string = "https://api.clickup.com/api/v2"
    private cachedUser: ClickUpUser | null = null
-   private store: JsonStore;
+   private store: JSONStore;
 
-   constructor(store: JsonStore) {
+   constructor(store: JSONStore) {
       this.store = store;
    }
 
@@ -17,7 +17,7 @@ class ClickUpAPICLient {
       await this.setUpConfig();
    }
 
-   public static async getInstance(store: JsonStore): Promise<ClickUpAPICLient> {
+   public static async getInstance(store: JSONStore): Promise<ClickUpAPICLient> {
       if (!ClickUpAPICLient.instance) {
          const newCLient = new ClickUpAPICLient(store);
          await newCLient.initialize();
@@ -145,7 +145,7 @@ class ClickUpAPICLient {
 }
 
 
-export async function getClickUpClient(store: JsonStore) {
+export async function getClickUpClient(store: JSONStore) {
    const client = await ClickUpAPICLient.getInstance(store);
    return client;
 }

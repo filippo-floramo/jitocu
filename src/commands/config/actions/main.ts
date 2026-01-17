@@ -2,7 +2,7 @@ import chalk from "chalk";
 import { getMissingRequiredSettings } from "../../../store/utils/getMissingRequiredSettings";
 import { baseSettingsPath, settingPathsMap } from "../../../store/constants";
 import { confirm, input, password } from "@inquirer/prompts";
-import JsonStore, { getJSONStore } from "../../../store/JSONStore";
+import { getJSONStore } from "../../../store/JSONStore";
 import { showMissingSettignsPaths } from "../../../store/utils/showMissingSettingsPaths";
 
 export async function mainConfigAction() {
@@ -33,15 +33,10 @@ export async function mainConfigAction() {
                   });
                   break;
             }
-
-
             await store.updatePath(`${baseSettingsPath}.${missingPath}`, answer)
          }
-
          console.log(chalk.green("✅ All missing settings are configured!"));
       }
-
-
    } else {
       console.log(chalk.green("✅ All settings are configured!"));
    }

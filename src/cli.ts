@@ -10,7 +10,7 @@ import fuzzy from 'fuzzy';
 import { createConfigCommand } from "./commands/config";
 import { getMissingRequiredSettings } from "./store/utils/getMissingRequiredSettings";
 import { showMissingSettignsPaths } from "./store/utils/showMissingSettingsPaths";
-import JsonStore, { getJSONStore } from "./store/JSONStore";
+import { getJSONStore } from "./store/JSONStore";
 
 const program = new Command();
 

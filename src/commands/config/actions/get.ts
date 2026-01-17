@@ -1,5 +1,5 @@
 import chalk from "chalk";
-import JsonStore, { getJSONStore } from "../../../store/JSONStore";
+import { getJSONStore } from "../../../store/JSONStore";
 import { validateSettingPath } from "../../../store/utils/validateSettingPath";
 import { baseSettingsPath } from "../../../store/constants";
 

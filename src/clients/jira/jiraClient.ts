@@ -1,4 +1,4 @@
-import JsonStore from "../../store/JSONStore";
+import { JSONStore } from "../../store/JSONStore";
 import type { JiraSearchResponse, JiraIssueChoice } from "./types";
 
 class JiraAPIClient {
@@ -7,10 +7,10 @@ class JiraAPIClient {
    private email: string | undefined;
    private apiToken: string | undefined;
    private baseUrl: string = "https://api.atlassian.net/rest/api/3"
-   private store: JsonStore;
+   private store: JSONStore;
 
 
-   constructor(store: JsonStore) {
+   constructor(store: JSONStore) {
       this.store = store
    }
 
@@ -21,7 +21,7 @@ class JiraAPIClient {
       this.baseUrl = `https://${this.domain}/rest/api/3`;
    }
 
-   public static async getInstance(store: JsonStore): Promise<JiraAPIClient> {
+   public static async getInstance(store: JSONStore): Promise<JiraAPIClient> {
       if (!JiraAPIClient.instance) {
          const newClient = new JiraAPIClient(store);
          await newClient.initialize();
@@ -72,7 +72,7 @@ class JiraAPIClient {
 }
 
 
-export async function getJiraClient(store: JsonStore) {
+export async function getJiraClient(store: JSONStore) {
    const client = await JiraAPIClient.getInstance(store);
    return client;
 }
