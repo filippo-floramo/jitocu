@@ -1,8 +1,10 @@
 import { JSONStore } from '../../store/JSONStore';
 import type { ClickUpTask, ClickUpCreateTaskRequest, ClickUpFolder, ClickUpUser } from './types';
+import fuzzy from 'fuzzy';
 
-class ClickUpAPICLient {
-   public static instance: ClickUpAPICLient
+
+class ClickUpAPIClient {
+   public static instance: ClickUpAPIClient
    private workspaceId: string | undefined;
    private apiToken: string | undefined;
    private baseUrl: string = "https://api.clickup.com/api/v2"
@@ -14,17 +16,18 @@ class ClickUpAPICLient {
    }
 
    public async initialize(): Promise<void> {
-      await this.setUpConfig();
+      this.workspaceId = await this.store.getPath("settings.clickUp.workspaceId");
+      this.apiToken = await this.store.getPath("settings.clickUp.apiToken");
    }
 
-   public static async getInstance(store: JSONStore): Promise<ClickUpAPICLient> {
-      if (!ClickUpAPICLient.instance) {
-         const newCLient = new ClickUpAPICLient(store);
+   public static async getInstance(store: JSONStore): Promise<ClickUpAPIClient> {
+      if (!ClickUpAPIClient.instance) {
+         const newCLient = new ClickUpAPIClient(store);
          await newCLient.initialize();
 
-         ClickUpAPICLient.instance = newCLient
+         ClickUpAPIClient.instance = newCLient
       }
-      return ClickUpAPICLient.instance
+      return ClickUpAPIClient.instance
    }
 
    public async createTask(issue: string, listId: string): Promise<ClickUpTask> {
@@ -103,6 +106,24 @@ class ClickUpAPICLient {
    }
 
 
+
+   public async getListByName(listName: string) {
+      const folders = await this.getSharedFolders();
+
+      const mapped = folders.flatMap((fold) => {
+         const listNames = fold.lists.map((list) => {
+            return { name: `${fold.name} -> ${list.name}`, value: list.id }
+         })
+
+         return listNames
+      });
+
+      const res = fuzzy
+         .filter(listName, mapped, { extract: (val) => val.name })
+         .map((res) => res.original)
+      return res
+   }
+
    public async getAuthorizedUser(): Promise<ClickUpUser> {
 
       if (!this.apiToken) {
@@ -136,16 +157,10 @@ class ClickUpAPICLient {
          throw error;
       }
    }
-
-   private async setUpConfig() {
-      this.workspaceId = await this.store.getPath("settings.clickUp.workspaceId");
-      this.apiToken = await this.store.getPath("settings.clickUp.apiToken");
-   }
-
 }
 
 
 export async function getClickUpClient(store: JSONStore) {
-   const client = await ClickUpAPICLient.getInstance(store);
+   const client = await ClickUpAPIClient.getInstance(store);
    return client;
 }

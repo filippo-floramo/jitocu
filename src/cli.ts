@@ -3,23 +3,25 @@
 import { Command } from "commander";
 import { getJiraClient, type JiraIssueChoice } from "./clients/jira";
 import { getClickUpClient, type ClickUpFolder } from "./clients/clickUp";
-import { select } from "@inquirer/prompts";
+import { search, select } from "@inquirer/prompts";
 import checkboxPlusPrompt from "inquirer-checkbox-plus-plus";
 import ora from "ora";
 import fuzzy from 'fuzzy';
-import { createConfigCommand } from "./commands/config";
+import { configCommand } from "./commands/config";
 import { getMissingRequiredSettings } from "./store/utils/getMissingRequiredSettings";
 import { showMissingSettignsPaths } from "./store/utils/showMissingSettingsPaths";
 import { getJSONStore } from "./store/JSONStore";
+import { createTicketCommand } from "./commands/create";
 
 const program = new Command();
 
 program
   .name("jitocu")
   .description("Copy Jira issues assigned to you to ClickUp")
-  .version("1.0.0");
+  .version("0.1.0");
 
-program.addCommand(createConfigCommand())
+program.addCommand(configCommand())
+program.addCommand(createTicketCommand())
 
 program.action(async () => {
   const store = getJSONStore()
@@ -37,24 +39,16 @@ program.action(async () => {
   const jiraSpinner = ora("Fetching Jira issues...").start();
   let jiraIssues: JiraIssueChoice[];
   try {
-    jiraIssues = await jiraClient.fetchMyJiraIssues();
+    jiraIssues = await jiraClient.fetchJiraIssues();
     jiraSpinner.succeed("Jira issues loaded");
   } catch (error) {
     jiraSpinner.fail("Failed to fetch Jira issues");
     throw error;
   }
-  const answers = await checkboxPlusPrompt({
+  const answer = await search({
     message: "Select Jira issues",
-    searchable: true,
     pageSize: 20,
-    highlight: true,
-    validate: (answer: JiraIssueChoice[]) => {
-      if (answer.length === 0) {
-        return 'You must choose at least one issue.';
-      }
-      return true;
-    },
-    source: async (_, input) => {
+    source: async (input) => {
       input = input || "";
       const fuzzySearch = fuzzy.filter(input, jiraIssues, {
         extract: (item) => item.name
@@ -90,19 +84,17 @@ program.action(async () => {
   });
 
   console.log(' ');
-  for (const ans of answers) {
-    const taskSpinner = ora(`Creating task: ${ans}`).start();
-    try {
-      await clickUpClient.createTask(ans, selectedListId);
-      taskSpinner.succeed(`Task created: ${ans}`);
-    } catch (error) {
-      taskSpinner.fail(`Failed to create task: ${ans}`);
-      throw error;
-    }
+  const taskSpinner = ora(`Creating task: ${answer}`).start();
+  try {
+    await clickUpClient.createTask(answer, selectedListId);
+    taskSpinner.succeed(`Task created: ${answer}`);
+  } catch (error) {
+    taskSpinner.fail(`Failed to create task: ${answer}`);
+    throw error;
   }
 
   console.log();
-  console.log(`✅ Successfully created ${answers.length} task${answers.length > 1 ? 's' : ''} in ClickUp!`);
+  console.log(`✅ Successfully created  task ${answer} in ClickUp!`);
   process.exit(0)
 });
 

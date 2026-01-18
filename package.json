@@ -1,6 +1,6 @@
 {
   "name": "jitocu",
-  "version": "1.0.0",
+  "version": "0.1.0",
   "description": "Copy Jira issues to ClickUp with an interactive terminal UI",
   "type": "module",
   "bin": {

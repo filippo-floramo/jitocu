@@ -8,6 +8,7 @@ class JiraAPIClient {
    private apiToken: string | undefined;
    private baseUrl: string = "https://api.atlassian.net/rest/api/3"
    private store: JSONStore;
+   private auth: string | undefined;
 
 
    constructor(store: JSONStore) {
@@ -19,6 +20,7 @@ class JiraAPIClient {
       this.email = await this.store.getPath("settings.jira.email");
       this.apiToken = await this.store.getPath("settings.jira.apiToken");
       this.baseUrl = `https://${this.domain}/rest/api/3`;
+      this.auth = btoa(`${this.email}:${this.apiToken}`);
    }
 
    public static async getInstance(store: JSONStore): Promise<JiraAPIClient> {
@@ -31,21 +33,20 @@ class JiraAPIClient {
       return JiraAPIClient.instance
    }
 
-   public async fetchMyJiraIssues(): Promise<JiraIssueChoice[]> {
+   public async fetchJiraIssues(key?: string): Promise<JiraIssueChoice[]> {
 
       if (!this.domain || !this.email || !this.apiToken) {
          throw new Error('Missing Jira configuration');
       }
 
       try {
-         const jql = 'assignee=currentUser() ORDER BY updated DESC';
-         const url = `${this.baseUrl}/search/jql?jql=${encodeURIComponent(jql)}&maxResults=50&fields=summary,description,status,issuetype,priority,labels`;
-
-         const auth = btoa(`${this.email}:${this.apiToken}`);
+         const baseJql = `assignee=currentUser() ${key ? `AND key=${key}` : ""}`
+         const jqlQuery = `${baseJql} ORDER BY updated DESC`;
+         const url = `${this.baseUrl}/search/jql?jql=${encodeURIComponent(jqlQuery)}&maxResults=50&fields=summary,description,status,issuetype,priority,labels`;
 
          const response = await fetch(url, {
             headers: {
-               'Authorization': `Basic ${auth}`,
+               'Authorization': `Basic ${this.auth}`,
                'Accept': 'application/json',
                'Content-Type': 'application/json'
             }

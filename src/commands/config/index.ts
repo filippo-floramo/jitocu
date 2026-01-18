@@ -7,7 +7,7 @@ import {
    clearAllAction
 } from "./actions"
 
-export function createConfigCommand(): Command {
+export function configCommand(): Command {
 
    const config = new Command('config')
       .description("Configure CLI settings (Jira/ClickUp clients, preferences)")
