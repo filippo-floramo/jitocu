@@ -1,10 +1,7 @@
-#!/usr/bin/env bun
-
 import { Command } from "commander";
 import { getJiraClient, type JiraIssueChoice } from "./clients/jira";
 import { getClickUpClient, type ClickUpFolder } from "./clients/clickUp";
 import { search, select } from "@inquirer/prompts";
-import checkboxPlusPrompt from "inquirer-checkbox-plus-plus";
 import ora from "ora";
 import fuzzy from 'fuzzy';
 import { configCommand } from "./commands/config";
