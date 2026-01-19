@@ -1,6 +1,14 @@
 {
   "name": "jitocu",
   "version": "0.1.0",
+  "author": {
+    "name": "Filippo FLoramo",
+    "email": "filifloramo@gmail.com"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/filippo-floramo/jitocu"
+  },
   "description": "Copy Jira issues to ClickUp with an interactive terminal UI",
   "type": "module",
   "bin": {
@@ -9,8 +17,15 @@
   "scripts": {
     "start": "bun run src/cli.ts",
     "dev": "bun --watch src/cli.ts",
-    "build": "bun build ./src/cli.ts --outdir ./dist --target node",
+    "build": "bun build ./src/cli.ts --outdir ./dist --target node --banner '#!/usr/bin/env node' ",
     "prepublishOnly": "bun run build"
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "engines": {
+    "node": ">=22.0.0"
   },
   "keywords": [
     "jira",
@@ -20,7 +35,6 @@
     "bun",
     "typescript"
   ],
-  "author": "",
   "license": "MIT",
   "dependencies": {
     "@inquirer/prompts": "^8.2.0",
@@ -30,9 +44,7 @@
     "ora": "^9.0.0"
   },
   "devDependencies": {
-    "bun-types": "latest"
-  },
-  "peerDependencies": {
+    "bun-types": "latest",
     "typescript": "^5.9.3"
   }
 }
