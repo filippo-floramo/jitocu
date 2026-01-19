@@ -4,40 +4,31 @@
 
 ## Prerequisites
 
-- [Bun](https://bun.sh) runtime installed
+- [Bun](https://bun.sh) runtime installed (required for development only)
 - Jira account with API access
 - ClickUp account with API access
 
 ## Installation
 
-1. Clone the repository:
+Install globally via npm:
 
 ```bash
-git clone <repository-url>
-cd ticket-maker
+npm install -g jitocu
 ```
 
-1. Install dependencies:
+Or with Bun:
 
 ```bash
-bun install
+bun install -g jitocu
 ```
 
-1. Set up environment variables:
+After installation, configure your credentials:
 
 ```bash
-cp .env.example .env
+jitocu config
 ```
 
-1. Edit `.env` with your credentials:
-
-```env
-JIRA_DOMAIN="your-domain.atlassian.net"
-JIRA_EMAIL="your-email@example.com"
-JIRA_API_TOKEN="your-jira-api-token"
-CLICKUP_API_TOKEN="your-clickup-api-token"
-CLICKUP_WORKSPACE_ID="your-workspace-id"
-```
+> **Note:** The `config` command will detect missing settings and prompt you to set them up interactively. You can also set values manually using `jitocu config set <path> <value>`.
 
 ## Getting API Tokens
 
@@ -62,44 +53,75 @@ CLICKUP_WORKSPACE_ID="your-workspace-id"
 1. Log in to ClickUp and navigate to your workspace
 1. Click **Settings** in the sidebar
 1. Click **Workspaces**
-1. Your Workspace ID is displayed under the workspace name (it's a numeric ID like `2156096`)
+1. Your Workspace ID is displayed under the workspace name (it's a numeric ID like `1234567`)
 1. Alternatively, you can find it in the URL when viewing your workspace: `https://app.clickup.com/{WORKSPACE_ID}/...`
 
 ## Usage
 
-Run the CLI tool:
+### Configuration
+
+Configure your Jira and ClickUp credentials:
 
 ```bash
-bun start
+jitocu config
 ```
 
-Or in development mode with auto-reload:
+The config command will:
+
+- Check for missing settings
+- **Prompt you to set them up interactively** if any are missing
+- Guide you through the setup process
+
+**Manual configuration (optional):**
 
 ```bash
-bun run dev
+# Set individual values
+jitocu config set jira.domain 'your-domain.atlassian.net'
+jitocu config set jira.email 'your-email@example.com'
+jitocu config set jira.apiToken 'your-jira-token'
+jitocu config set clickUp.apiToken 'your-clickup-token'
+jitocu config set clickUp.workspaceId 'your-workspace-id'
+
+# View a specific setting
+jitocu config get jira.domain
+
+# List all settings
+jitocu config list
 ```
 
-### Workflow
+### Interactive Copy (Main Feature)
 
-1. **Fetch Jira Issues** - The tool fetches all issues assigned to you
-2. **Select Issues** - Use fuzzy search to find and select issues (multi-select with space, confirm with enter)
-3. **Choose Folder** - Select a ClickUp shared folder
-4. **Choose List** - Select a list within the folder
-5. **Create Tasks** - Tasks are created in ClickUp with your name as assignee
+Copy Jira issues to ClickUp interactively:
 
-## Project Structure
+```bash
+jitocu
+```
 
-```text
-ticket-maker/
-├── src/
-│   ├── cli.ts              # Main CLI application
-│   ├── types.ts            # TypeScript type definitions
-│   └── clients/
-│       ├── jira.ts         # Jira API client
-│       └── clickUp.ts      # ClickUp API client
-├── .env.example            # Environment variables template
-├── package.json
-└── README.md
+**Workflow:**
+
+1. 🔍 **Search Issues** - Type to fuzzy search your Jira issues
+2. ✅ **Select Issue** - Choose the issue you want to copy
+3. 📁 **Choose Folder** - Select a ClickUp shared folder
+4. 📋 **Choose List** - Select a list within the folder
+5. ✨ **Task Created** - Your Jira issue is now in ClickUp!
+
+### Create Single Ticket
+
+Quickly create a ClickUp task from a Jira issue without interactive prompts:
+
+```bash
+jitocu create --key PROJ-123 --list "My List Name"
+```
+
+**Required flags:**
+
+- `-k, --key <ISSUE-KEY>` - Jira issue key (e.g., PROJ-123)
+- `-l, --list <LIST-NAME>` - ClickUp list name where the task will be created
+
+**Example:**
+
+```bash
+jitocu create -k PROJ-456 -l "Sprint Backlog"
 ```
 
 ## Tech Stack
@@ -107,18 +129,68 @@ ticket-maker/
 - **Runtime**: [Bun](https://bun.sh)
 - **Language**: TypeScript
 - **CLI Framework**: [Commander.js](https://github.com/tj/commander.js)
-- **Prompts**: [@inquirer/prompts](https://github.com/SBoudrias/Inquirer.js), [inquirer-checkbox-plus-plus](https://github.com/faressoft/inquirer-checkbox-plus-prompt)
+- **Prompts**: [@inquirer/prompts](https://github.com/SBoudrias/Inquirer.js)
 - **Fuzzy Search**: [fuzzy](https://github.com/mattyork/fuzzy)
 - **Loading Indicators**: [ora](https://github.com/sindresorhus/ora)
+- **Styling**: [chalk](https://github.com/chalk/chalk)
 
 ## Development
 
-The codebase is fully typed with TypeScript. Key features:
+### Setup for Contributors
 
-- **Type-safe API clients** for both Jira and ClickUp
-- **Error handling** with descriptive messages
-- **Loading states** for all async operations
-- **Environment validation** on startup
+- Clone the repository:
+
+```bash
+git clone <repository-url>
+cd jitocu
+```
+
+- Install dependencies:
+
+```bash
+bun install
+```
+
+- Configure your credentials:
+
+```bash
+bun run src/cli.ts config
+```
+
+- Run in development mode with auto-reload:
+
+```bash
+bun run dev
+```
+
+### Build and Test
+
+Build for distribution:
+
+```bash
+bun run build
+```
+
+Test the built CLI globally:
+
+```bash
+bun link
+jitocu --help
+```
+
+Run tests:
+
+```bash
+bun test
+```
+
+### Key Features
+
+- Type-safe API clients for Jira and ClickUp
+- Persistent configuration storage with JSON
+- Interactive CLI with fuzzy search
+- Loading states and error handling
+- Atomic settings updates
 
 ## License
 
