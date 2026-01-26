@@ -1,5 +1,7 @@
 import { Command } from "commander";
-import { createTicketAction } from "./actions";
+import { CreateTicketCommand } from "./command";
+import { handleError } from "../../errors/handleError";
+
 
 
 export function createTicketCommand() {
@@ -7,7 +9,15 @@ export function createTicketCommand() {
       .description("Create ticket directly without interactive mode")
       .requiredOption('-k, --key <ISSUE-KEY>', 'Jira issue key', (value) => value.toUpperCase())
       .requiredOption('-l, --list <LIST-NAME>', "Clickup List name", value => value.trim())
-      .action(createTicketAction)
+      .action(async (opts) => {
+         try {  
+            const command = new CreateTicketCommand(opts)
+            await command.execute()
+            process.exit(0)
+         } catch (error) {
+            handleError(error)
+         }
+      })
 
    return create
 }
