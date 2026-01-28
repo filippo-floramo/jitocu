@@ -3,7 +3,7 @@
   "configVersion": 0,
   "workspaces": {
     "": {
-      "name": "jicu",
+      "name": "jitocu",
       "dependencies": {
         "@inquirer/prompts": "^8.2.0",
         "chalk": "^5.6.2",
