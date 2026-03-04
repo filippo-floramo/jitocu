@@ -7,6 +7,7 @@ import { withSpinner } from "../helpers/withSpinner";
 import { ConfigError } from "../errors";
 import fuzzy from 'fuzzy';
 import { CLICommand } from "./shared/command.interface";
+import { treeSelect } from "../prompts/treeSelect";
 
 
 export class DefaultCLICommand implements CLICommand {
@@ -51,21 +52,13 @@ export class DefaultCLICommand implements CLICommand {
          }
       )
 
-      const selectedFolderId = await select({
-         message: "Select ClickUp shared folder",
-         choices: folders.map((folder) => ({ name: folder.name, value: folder.id }))
+      const selectedList = await treeSelect({
+         message: "Select a ClickUp list:",
+         folders: folders,
+         pageSize: 14,
       });
 
-      const selectedFolder = folders.find((folder) => folder.id === selectedFolderId);
-      if (!selectedFolder) {
-         console.error("❌ Selected folder not found");
-         process.exit(0);
-      }
-
-      const selectedListId = await select({
-         message: "Select list",
-         choices: selectedFolder.lists.map((list) => ({ name: list.name, value: list.id }))
-      });
+      const selectedListId = selectedList.listId;
 
       console.log(' ');
       await withSpinner(
