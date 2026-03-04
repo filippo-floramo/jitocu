@@ -31,7 +31,7 @@ export interface ClickCupTimeTimeEntriesResponse {
 
 export interface ClickUpTimeEntry {
   id: string
-  task: ClickUpTask
+  task: ClickUpPartialTask
   wid: string
   user: ClickUpUser
   billable: boolean
@@ -48,7 +48,7 @@ export interface ClickUpTimeEntry {
   task_url: string
 }
 
-export interface ClickUpTask {
+export interface ClickUpPartialTask {
   id: string
   name: string
   status: ClickUpTaskStatus

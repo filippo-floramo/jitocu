@@ -7,6 +7,7 @@ import { createPrompt, useState, useKeypress, isEnterKey } from '@inquirer/core'
 import chalk from 'chalk';
 import { DAYS_MAP } from '../helpers';
 import { MappedtimeEntry } from '../helpers/mapTimeEntries';
+import { truncate } from '../helpers/truncate';
 
 interface TimeSheetConfig {
   message: string;
@@ -62,12 +63,6 @@ const spreadsheetTable = createPrompt<TimeSheetResult, TimeSheetConfig>((config,
 
   // Calculate column widths
   const MAX_LABEL_WIDTH = 38
-  const truncate = (str: string, maxWidth: number) => {
-    if (str.length < maxWidth - 3) {
-      return str
-    }
-    return str.substring(0, maxWidth - 3) + "..."
-  }
   const labelWidth = Math.max(10, ...config.rows.map(r => r.label.length > MAX_LABEL_WIDTH ? MAX_LABEL_WIDTH : r.label.length)) + 2;
   const cellWidth = 8;
 

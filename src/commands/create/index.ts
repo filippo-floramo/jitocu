@@ -1,5 +1,5 @@
 import { Command } from "commander";
-import { CreateTicketCommand } from "./command";
+import { CreateTicketCommand } from "./default";
 import { handleError } from "../../errors/handleError";
 
 

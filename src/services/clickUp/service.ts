@@ -1,7 +1,7 @@
 import { getJSONStore } from "../../store/JSONStore";
 import { ClickUpAPI } from "./api";
 import fuzzy from 'fuzzy';
-import { ClickUpTask, CratimeEntryPayload } from "./types";
+import { ClickUpPartialTask, CratimeEntryPayload } from "./types";
 import { CLIError } from "../../errors";
 import { mapTimeEntries } from "../../helpers/mapTimeEntries";
 
@@ -29,7 +29,7 @@ export class ClickUpService {
       return ClickUpService.instance
    }
 
-   public async createTaskAssignedToMe(issue: string, listId: string): Promise<ClickUpTask> {
+   public async createTaskAssignedToMe(issue: string, listId: string): Promise<ClickUpPartialTask> {
       const user = await this.api.getAuthorizedUser()
       const myTasks = await this.api.getTasksByListId(listId, String(user.id));
       const isIssueAlreadyCopied = !!myTasks.find((tsk: any) => tsk.name === issue)
@@ -48,6 +48,12 @@ export class ClickUpService {
 
    public async createTimeEntry(body: CratimeEntryPayload) {
       return await this.api.createTimeEntry(body)
+   }
+
+   public async getTasksByListId(listId: string) {
+      const user = await this.api.getAuthorizedUser()
+      const myTasks = await this.api.getTasksByListId(listId, String(user.id));
+      return myTasks
    }
 
    public async getMySharedFolders() {

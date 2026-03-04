@@ -1,5 +1,5 @@
 import { APIError } from '../../errors';
-import type { ClickUpTask, ClickUpCreateTaskRequest, ClickUpFolder, ClickUpUser, CratimeEntryPayload, ClickUpTimeEntry, ClickCupTimeTimeEntriesResponse } from './types';
+import type { ClickUpPartialTask, ClickUpCreateTaskRequest, ClickUpFolder, ClickUpUser, CratimeEntryPayload, ClickUpTimeEntry, ClickCupTimeTimeEntriesResponse } from './types';
 
 export class ClickUpAPI {
    private workspaceId: string;
@@ -15,7 +15,7 @@ export class ClickUpAPI {
       this.apiToken = apiToken
    }
 
-   public async createTaskByListId(issue: string, listId: string, userId?: number): Promise<ClickUpTask> {
+   public async createTaskByListId(issue: string, listId: string, userId?: number): Promise<ClickUpPartialTask> {
       if (!listId) {
          throw new Error('Missing ClickUp List Id');
       }
@@ -39,7 +39,7 @@ export class ClickUpAPI {
          throw new APIError(`ClickUp API error (${response.status}): ${error}`);
       }
 
-      const data = await response.json() as ClickUpTask
+      const data = await response.json() as ClickUpPartialTask
       return data;
    }
 

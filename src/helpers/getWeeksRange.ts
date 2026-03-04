@@ -1,10 +1,14 @@
+import chalk from "chalk";
+
 interface WeekRangeChoice {
   name: string;
   value: { start: number, end: number }
 }
 
 function formatDate(date: Date): string {
-  return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+  const month = date.toLocaleDateString('en-US', { month: 'short' });
+  const day = date.getDate().toString();
+  return `${month} ${day.padStart(2, ' ')}`;
 }
 
 export function getWeeksRange(): WeekRangeChoice[] {
@@ -21,7 +25,7 @@ export function getWeeksRange(): WeekRangeChoice[] {
   saturday.setDate(today.getDate() + daysToSaturday)
 
   ranges.push({
-    name: `${formatDate(sunday)} - ${formatDate(saturday)}`,
+    name: `${formatDate(sunday)} - ${formatDate(saturday)} ${chalk.dim("<- Current")}`,
     value: { start: sunday.getTime(), end: saturday.getTime() }
   })
 

@@ -106,9 +106,7 @@ export const treeSelect = createPrompt<SelectedList, TreeSelectConfig>(
 
       const hideCursor = '\x1B[?25l';
       const rows = flattenFolders(folders);
-      const selectable = selectableIndices(rows);
 
-      // cursorPos is an index into selectable[], not rows[]
       const [cursorPos, setCursorPos] = useState(0);
       const [isDone, setIsDone] = useState(false);
       const [searchQuery, setSearchQuery] = useState("");

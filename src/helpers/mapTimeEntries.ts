@@ -1,6 +1,4 @@
 import { ClickUpTimeEntry } from "../services/clickUp";
-
-
 export interface MappedtimeEntry {
    id: string,
    label: string,
@@ -13,7 +11,6 @@ export function mapTimeEntries(entries: ClickUpTimeEntry[]): MappedtimeEntry[] {
    for (const entry of entries) {
       const { task, task_url, start, duration } = entry
 
-      // Skip entries without a task
       if (!task || !task.id) continue
 
       const { dayName, hours } = getDateInfo(Number(start), Number(duration))
