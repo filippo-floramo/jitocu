@@ -3,7 +3,7 @@ import { ClickUpFolder, ClickUpService } from "../services/clickUp";
 import { JiraIssueChoice, JiraService } from "../services/jira";
 import { getMissingRequiredSettings } from "../store/utils/getMissingRequiredSettings";
 import { showMissingSettignsPaths } from "../store/utils/showMissingSettingsPaths";
-import { withSpinner } from "../utils/withSpinner";
+import { withSpinner } from "../helpers/withSpinner";
 import { ConfigError } from "../errors";
 import fuzzy from 'fuzzy';
 import { CLICommand } from "./shared/command.interface";

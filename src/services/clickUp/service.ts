@@ -1,8 +1,9 @@
 import { getJSONStore } from "../../store/JSONStore";
 import { ClickUpAPI } from "./api";
 import fuzzy from 'fuzzy';
-import { ClickUpTask } from "./types";
+import { ClickUpTask, CratimeEntryPayload } from "./types";
 import { CLIError } from "../../errors";
+import { mapTimeEntries } from "../../helpers/mapTimeEntries";
 
 
 
@@ -37,6 +38,16 @@ export class ClickUpService {
          throw new CLIError(`Issue "${issue}" already exists in this list. Delete the existing task or use a different issue.`);
       }
       return await this.api.createTaskByListId(issue, listId, user.id)
+   }
+
+   public async getTimeEntries(range: { start: number, end: number }) {
+      const entries = await this.api.getTimeEntries(range)
+
+      return mapTimeEntries(entries)
+   }
+
+   public async createTimeEntry(body: CratimeEntryPayload) {
+      return await this.api.createTimeEntry(body)
    }
 
    public async getMySharedFolders() {

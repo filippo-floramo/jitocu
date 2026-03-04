@@ -4,7 +4,7 @@ import { getMissingRequiredSettings } from "../../store/utils/getMissingRequired
 import { showMissingSettignsPaths } from "../../store/utils/showMissingSettingsPaths";
 import { select } from "@inquirer/prompts";
 import { ClickUpService } from "../../services/clickUp";
-import { withSpinner } from "../../utils/withSpinner";
+import { withSpinner } from "../../helpers/withSpinner";
 import { ConfigError } from "../../errors";
 
 interface CreateTicketOptions {

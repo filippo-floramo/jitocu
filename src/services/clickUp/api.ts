@@ -1,5 +1,5 @@
 import { APIError } from '../../errors';
-import type { ClickUpTask, ClickUpCreateTaskRequest, ClickUpFolder, ClickUpUser } from './types';
+import type { ClickUpTask, ClickUpCreateTaskRequest, ClickUpFolder, ClickUpUser, CratimeEntryPayload, ClickUpTimeEntry, ClickCupTimeTimeEntriesResponse } from './types';
 
 export class ClickUpAPI {
    private workspaceId: string;
@@ -61,6 +61,38 @@ export class ClickUpAPI {
 
       const data = await response.json() as any;
       return data.tasks || [];
+   }
+
+   public async createTimeEntry(body: CratimeEntryPayload) {
+      const url = `${this.baseUrl}/team/${this.workspaceId}/time_entries`;
+      const response = await fetch(url, {
+         method: 'POST',
+         headers: {
+            'Authorization': this.apiToken,
+            'Content-Type': 'application/json'
+         },
+         body: JSON.stringify(body)
+      });
+      if (!response.ok) {
+         throw new APIError(`ClickUp API error. Fail to create time entry: (${response.status}): ${response.statusText}`);
+      }
+      const data = await response.json() as { data: ClickUpTimeEntry };
+      return data.data || {}
+   }
+
+   public async getTimeEntries(range: { start: number, end: number }) {
+      const queryParam = `?start_date=${range.start}&end_date=${range.end}`
+      const url = `${this.baseUrl}/team/${this.workspaceId}/time_entries${queryParam}`;
+      const response = await fetch(url, {
+         headers: {
+            'Authorization': this.apiToken
+         }
+      });
+      if (!response.ok) {
+         throw new APIError(`ClickUp API error. Failed to fetch time entries (${response.status}): ${response.statusText}`);
+      }
+      const data = await response.json() as ClickCupTimeTimeEntriesResponse;
+      return data.data
    }
 
    public async getSharedFolders(): Promise<ClickUpFolder[]> {

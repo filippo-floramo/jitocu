@@ -1,6 +1,7 @@
 import { Command } from "commander";
 import { configCommand } from "./commands/config";
 import { createTicketCommand } from "./commands/create";
+import { timeCommand } from "./commands/time";
 import { DefaultCLICommand } from "./commands/default";
 import { handleError } from "./errors/handleError";
 
@@ -13,6 +14,7 @@ program
 
 program.addCommand(configCommand())
 program.addCommand(createTicketCommand())
+program.addCommand(timeCommand())
 
 program.action(async () => {
   try {
