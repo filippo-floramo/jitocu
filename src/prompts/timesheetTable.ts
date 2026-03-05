@@ -31,6 +31,8 @@ const spreadsheetTable = createPrompt<TimeSheetResult, TimeSheetConfig>((config,
   // ANSI escape code to hide cursor
   const hideCursor = '\x1B[?25l';
   const DAYS = Object.keys(DAYS_MAP)
+  const selectedDay = DAYS[selectedCol];
+  const selectedRowData = config.rows[selectedRow];
 
   useKeypress((key) => {
     // Table navigation
@@ -44,10 +46,6 @@ const spreadsheetTable = createPrompt<TimeSheetResult, TimeSheetConfig>((config,
       setSelectedCol(Math.min(DAYS.length - 1, selectedCol + 1));
     } else if (isEnterKey(key) && config.rows.length > 0) {
       // Return selected cell data
-      const selectedDay = DAYS[selectedCol];
-
-
-      const selectedRowData = config.rows[selectedRow];
       const cellData = {
         task: selectedRowData,
         day: DAYS_MAP[selectedDay as keyof typeof DAYS_MAP],
@@ -109,7 +107,9 @@ const spreadsheetTable = createPrompt<TimeSheetResult, TimeSheetConfig>((config,
     });
   }
 
-  // Instructions
+  output += '\n Task: ' + chalk.hex("#299549b8").bold(selectedRowData.label) + '\n'
+
+  // Instruction s
   output += '\n';
   output += chalk.dim('  ←↑↓→: Navigate │ Enter: Select cell │ Q/Esc: Done');
 
