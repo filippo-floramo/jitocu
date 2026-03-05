@@ -2,16 +2,18 @@ import { CLICommand } from "../shared/command.interface";
 import { getMissingRequiredSettings } from "../../store/utils/getMissingRequiredSettings";
 import { showMissingSettignsPaths } from "../../store/utils/showMissingSettingsPaths";
 import { input, search, select } from "@inquirer/prompts";
-import { ClickUpFolder, ClickUpService, ClickUpPartialTask } from "../../services/clickUp";
+import { ClickUpFolder, ClickUpService, ClickUpTask } from "../../services/clickUp";
 import { withSpinner } from "../../helpers/withSpinner";
 import { ConfigError } from "../../errors";
-import { treeSelect, SelectedList } from "../../prompts/treeSelect";
-import * as fuzzy from "fuzzy"
-import chalk from "chalk";
 import { datePrompt } from "../../prompts/datePicker";
 import { parseRanges } from "../../helpers";
 import { truncate } from "../../helpers/truncate";
 import { formatDate } from "../../helpers/formatDate";
+import { treeSelect, SelectedList } from "../../prompts/treeSelect";
+import * as fuzzy from "fuzzy"
+import chalk from "chalk";
+
+
 interface CreateTicketOptions {
    list: string;
 }
@@ -23,7 +25,7 @@ export class AddTimeEntryCommand implements CLICommand {
       this.options = opts
    }
 
-   mapTask(task: { name: string, value: ClickUpPartialTask }) {
+   mapTask(task: { name: string, value: ClickUpTask }) {
       return {
          value: task.value,
          name: `${chalk.hex(task.value.status.color).bold(`[${task.value.status.status}]`)} - ${task.name}`
@@ -71,7 +73,7 @@ export class AddTimeEntryCommand implements CLICommand {
          listId = selectedList.listId
       }
 
-      const tasks: ClickUpPartialTask[] = await withSpinner(
+      const tasks: ClickUpTask[] = await withSpinner(
          async () => await clickUpSrv.getTasksByListId(listId),
          {
             text: "Fetching tasks...",
@@ -103,7 +105,7 @@ export class AddTimeEntryCommand implements CLICommand {
          format: "date"
       })
       const dslInput = await input({
-         message: `Enter time for ${truncate(selectedTask.name, 30)} on ${targetDate.toLocaleDateString('en-US', { weekday: "short", day: "numeric", month: "short" })}:`,
+         message: `Enter time for ${truncate(selectedTask.name, 30)} on ${formatDate(targetDate, { weekday: true, day: true, month: true })}:`,
          validate: (input) => {
             if (!input.trim()) return "Time entry cannot be empty"
             try {

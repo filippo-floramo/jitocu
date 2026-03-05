@@ -36,24 +36,38 @@ const spreadsheetTable = createPrompt<TimeSheetResult, TimeSheetConfig>((config,
 
   useKeypress((key) => {
     // Table navigation
-    if (key.name === 'up' || key.name === 'k') {
-      setSelectedRow(Math.max(0, selectedRow - 1));
-    } else if (key.name === 'down' || key.name === 'j') {
-      setSelectedRow(Math.min(config.rows.length - 1, selectedRow + 1));
-    } else if (key.name === 'left' || key.name === 'h') {
-      setSelectedCol(Math.max(0, selectedCol - 1));
-    } else if (key.name === 'right' || key.name === 'l') {
-      setSelectedCol(Math.min(DAYS.length - 1, selectedCol + 1));
-    } else if (isEnterKey(key) && config.rows.length > 0) {
-      // Return selected cell data
-      const cellData = {
-        task: selectedRowData,
-        day: DAYS_MAP[selectedDay as keyof typeof DAYS_MAP],
-        dayName: selectedDay
-      };
-      done(cellData);
-    } else if (key.name === 'q' || key.name === 'escape') {
-      done(config.rows);
+    switch (key.name) {
+      case 'up':
+      case 'k':
+        setSelectedRow(Math.max(0, selectedRow - 1));
+        break;
+      case 'down':
+      case 'j':
+        setSelectedRow(Math.min(config.rows.length - 1, selectedRow + 1));
+        break;
+      case 'left':
+      case 'h':
+        setSelectedCol(Math.max(0, selectedCol - 1));
+        break;
+      case 'right':
+      case 'l':
+        setSelectedCol(Math.min(DAYS.length - 1, selectedCol + 1));
+        break;
+      case 'q':
+      case 'escape':
+        done(config.rows);
+        break;
+      default:
+        if (isEnterKey(key) && config.rows.length > 0) {
+          // Return selected cell data
+          const cellData = {
+            task: selectedRowData,
+            day: DAYS_MAP[selectedDay as keyof typeof DAYS_MAP],
+            dayName: selectedDay
+          };
+          done(cellData);
+        }
+        break;
     }
   });
 

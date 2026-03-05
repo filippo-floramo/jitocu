@@ -1,7 +1,7 @@
 import { getJSONStore } from "../../store/JSONStore";
 import { ClickUpAPI } from "./api";
 import fuzzy from 'fuzzy';
-import { ClickUpPartialTask, CratimeEntryPayload } from "./types";
+import { ClickUpTask, CreateTimeEntryPayload } from "./types";
 import { CLIError } from "../../errors";
 import { mapTimeEntries } from "../../helpers/mapTimeEntries";
 
@@ -29,10 +29,10 @@ export class ClickUpService {
       return ClickUpService.instance
    }
 
-   public async createTaskAssignedToMe(issue: string, listId: string): Promise<ClickUpPartialTask> {
+   public async createTaskAssignedToMe(issue: string, listId: string): Promise<ClickUpTask> {
       const user = await this.api.getAuthorizedUser()
       const myTasks = await this.api.getTasksByListId(listId, String(user.id));
-      const isIssueAlreadyCopied = !!myTasks.find((tsk: any) => tsk.name === issue)
+      const isIssueAlreadyCopied = !!myTasks.find((tsk) => tsk.name === issue)
 
       if (isIssueAlreadyCopied) {
          throw new CLIError(`Issue "${issue}" already exists in this list. Delete the existing task or use a different issue.`);
@@ -46,7 +46,7 @@ export class ClickUpService {
       return mapTimeEntries(entries)
    }
 
-   public async createTimeEntry(body: CratimeEntryPayload) {
+   public async createTimeEntry(body: CreateTimeEntryPayload) {
       return await this.api.createTimeEntry(body)
    }
 
