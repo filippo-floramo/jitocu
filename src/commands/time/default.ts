@@ -6,6 +6,8 @@ import { showMissingSettignsPaths } from "../../store/utils/showMissingSettingsP
 import { getWeeksRange, withSpinner, parseRanges, getSelectedDate } from "../../helpers";
 import { CLICommand } from "../shared/command.interface";
 import spreadsheetTable from "../../prompts/timesheetTable";
+import chalk from "chalk";
+import { formatDate } from "../../helpers/formatDate";
 
 export class DefaultTimeCommand implements CLICommand {
 
@@ -69,10 +71,10 @@ export class DefaultTimeCommand implements CLICommand {
 
          await withSpinner(
             async () => await clickUpSrv.createTimeEntry(timeEntryPayload),
-            { text: `Creating time entry for ${selectedCell.task.label} with range from ${entry.start} to ${entry.end}` }
+            { text: `Creating time entry for ${selectedCell.task.label} \n Range: from ${chalk.hex('#299549b8').bold(formatDate(entry.start, { hour: true, minute: true }))} to ${chalk.hex('#299549b8').bold(formatDate(entry.end, { hour: true, minute: true }))}` }
          )
       }
 
-      console.log(`✅ Created ${result.length} time entry(ies) for ${selectedCell.task.label} on ${selectedCell.day}`)
+      console.log(`✅ Created ${result.length} time entr${(result.length > 1 ? 'ies' : 'y')} for ${selectedCell.task.label} \n On ${chalk.hex('#299549b8').bold(formatDate(selectedDate, { weekday: true, day: true, month: true }))}`)
    }
 }

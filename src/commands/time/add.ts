@@ -11,6 +11,7 @@ import chalk from "chalk";
 import { datePrompt } from "../../prompts/datePicker";
 import { parseRanges } from "../../helpers";
 import { truncate } from "../../helpers/truncate";
+import { formatDate } from "../../helpers/formatDate";
 interface CreateTicketOptions {
    list: string;
 }
@@ -21,6 +22,14 @@ export class AddTimeEntryCommand implements CLICommand {
    constructor(opts: CreateTicketOptions) {
       this.options = opts
    }
+
+   mapTask(task: { name: string, value: ClickUpPartialTask }) {
+      return {
+         value: task.value,
+         name: `${chalk.hex(task.value.status.color).bold(`[${task.value.status.status}]`)} - ${task.name}`
+      }
+   }
+
 
    public async execute() {
       const missing = await getMissingRequiredSettings();
@@ -81,7 +90,7 @@ export class AddTimeEntryCommand implements CLICommand {
             const fuzzySearch = fuzzy.filter(input, taskChoices, {
                extract: (item) => item.name
             });
-            return fuzzySearch.map((el) => mapTask(el.original));
+            return fuzzySearch.map((el) => this.mapTask(el.original));
          },
          theme: {
             style: {
@@ -118,18 +127,10 @@ export class AddTimeEntryCommand implements CLICommand {
 
          await withSpinner(
             async () => await clickUpSrv.createTimeEntry(timeEntryPayload),
-            { text: `Creating time entry for ${selectedTask.name} with range from ${entry.start} to ${entry.end}` }
+            { text: `Creating time entry for ${selectedTask.name} \n Range: from ${chalk.hex('#299549b8').bold(formatDate(entry.start, { hour: true, minute: true }))} to ${chalk.hex('#299549b8').bold(formatDate(entry.end, { hour: true, minute: true }))}` }
          )
       }
 
-      console.log(`✅ Created ${result.length} time entry(ies) for ${selectedTask.name} on ${targetDate.toLocaleDateString('en-US', { weekday: "short", day: "numeric", month: "short" })}`)
-   }
-}
-
-
-function mapTask(task: { name: string, value: ClickUpPartialTask }) {
-   return {
-      value: task.value,
-      name: `${chalk.hex(task.value.status.color).bold(`[${task.value.status.status}]`)} - ${task.name}`
+      console.log(`✅ Created ${result.length} time entr${(result.length > 1 ? 'ies' : 'y')} for ${selectedTask.name} \n On ${chalk.hex('#299549b8').bold(formatDate(targetDate, { weekday: true, day: true, month: true }))}`)
    }
 }
