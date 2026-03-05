@@ -5,7 +5,7 @@ interface WeekRangeChoice {
   value: { start: number, end: number }
 }
 
-function formatDate(date: Date): string {
+function formatRangeDate(date: Date): string {
   const month = date.toLocaleDateString('en-US', { month: 'short' });
   const day = date.getDate().toString();
   return `${month} ${day.padStart(2, ' ')}`;
@@ -25,7 +25,7 @@ export function getWeeksRange(): WeekRangeChoice[] {
   saturday.setDate(today.getDate() + daysToSaturday)
 
   ranges.push({
-    name: `${formatDate(sunday)} - ${formatDate(saturday)} ${chalk.dim("<- Current")}`,
+    name: `${formatRangeDate(sunday)} - ${formatRangeDate(saturday)} ${chalk.dim("<- Current")}`,
     value: { start: sunday.getTime(), end: saturday.getTime() }
   })
 
@@ -33,7 +33,7 @@ export function getWeeksRange(): WeekRangeChoice[] {
     sunday.setDate(sunday.getDate() - 7)
     saturday.setDate(saturday.getDate() - 7)
     ranges.push({
-      name: `${formatDate(sunday)} - ${formatDate(saturday)}`,
+      name: `${formatRangeDate(sunday)} - ${formatRangeDate(saturday)}`,
       value: { start: sunday.getTime(), end: saturday.getTime() }
     })
 
