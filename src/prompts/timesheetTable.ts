@@ -3,30 +3,43 @@
  * Navigate cells on X/Y axis
  */
 
-import { createPrompt, useState, useKeypress, isEnterKey } from '@inquirer/core';
+import { createPrompt, useState, useKeypress, isEnterKey, usePrefix, makeTheme } from '@inquirer/core';
 import chalk from 'chalk';
 import { DAYS_MAP } from '../helpers';
-import { MappedtimeEntry } from '../helpers/mapTimeEntries';
+import { MappedTaskForEntry } from '../helpers/mapTimeEntries';
 import { truncate } from '../helpers/truncate';
 
 interface TimeSheetConfig {
   message: string;
-  rows: MappedtimeEntry[];
+  rows: MappedTaskForEntry[];
 }
 
-interface CellSelection {
-  task: MappedtimeEntry;
+export interface CellSelection {
+  task: MappedTaskForEntry;
   day: number;
   dayName: string;
 }
+type ExitAction = 'close' | 'add'
 
-type TimeSheetResult = MappedtimeEntry[] | CellSelection;
+export type TimeSheetResult =
+  | { type: 'action'; action: ExitAction }
+  | { type: 'cell'; selection: CellSelection };
 
 
 
 const spreadsheetTable = createPrompt<TimeSheetResult, TimeSheetConfig>((config, done) => {
   const [selectedRow, setSelectedRow] = useState(0);
   const [selectedCol, setSelectedCol] = useState(0);
+  const [isDone, setIsDone] = useState(false)
+  const theme = makeTheme({
+    theme: {
+      prefix: {
+        idle: "🗒️",
+        done: "✔︎︎"
+      }
+    }
+  })
+  const prefix = usePrefix({ theme })
 
   // ANSI escape code to hide cursor
   const hideCursor = '\x1B[?25l';
@@ -55,7 +68,12 @@ const spreadsheetTable = createPrompt<TimeSheetResult, TimeSheetConfig>((config,
         break;
       case 'q':
       case 'escape':
-        done(config.rows);
+        setIsDone(true)
+        done({ type: 'action', action: 'close' });
+        break;
+      case 'a':
+        setIsDone(true)
+        done({ type: 'action', action: 'add' })
         break;
       default:
         if (isEnterKey(key) && config.rows.length > 0) {
@@ -65,17 +83,22 @@ const spreadsheetTable = createPrompt<TimeSheetResult, TimeSheetConfig>((config,
             day: DAYS_MAP[selectedDay as keyof typeof DAYS_MAP],
             dayName: selectedDay
           };
-          done(cellData);
+          setIsDone(true)
+          done({ type: 'cell', selection: cellData });
         }
         break;
     }
   });
 
+  if (isDone) {
+    return `${prefix} Selected Task ${selectedRowData.name}`
+  }
+
   let output = hideCursor + chalk.bold(config.message) + '\n\n';
 
   // Calculate column widths
   const MAX_LABEL_WIDTH = 38
-  const labelWidth = Math.max(10, ...config.rows.map(r => r.label.length > MAX_LABEL_WIDTH ? MAX_LABEL_WIDTH : r.label.length)) + 2;
+  const labelWidth = Math.max(10, ...config.rows.map(r => r.name.length > MAX_LABEL_WIDTH ? MAX_LABEL_WIDTH : r.name.length)) + 2;
   const cellWidth = 8;
 
   // Header row with days
@@ -98,7 +121,7 @@ const spreadsheetTable = createPrompt<TimeSheetResult, TimeSheetConfig>((config,
     config.rows.forEach((row, rowIdx) => {
       const isRowSelected = rowIdx === selectedRow;
       const pointer = isRowSelected ? chalk.cyan('❯ ') : '  ';
-      const label = truncate(row.label, labelWidth).padEnd(labelWidth);
+      const label = truncate(row.name, labelWidth).padEnd(labelWidth);
 
       output += pointer;
       output += isRowSelected ? chalk.cyan.bold(label) : chalk.dim(label);
@@ -121,7 +144,7 @@ const spreadsheetTable = createPrompt<TimeSheetResult, TimeSheetConfig>((config,
     });
   }
 
-  output += '\n Task: ' + chalk.hex("#299549b8").bold(selectedRowData.label) + '\n'
+  output += '\n Task: ' + chalk.hex("#299549b8").bold(selectedRowData.name) + '\n'
 
   // Instruction s
   output += '\n';

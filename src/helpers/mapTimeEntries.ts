@@ -1,12 +1,12 @@
 import { ClickUpTimeEntry } from "../services/clickUp";
-export interface MappedtimeEntry {
+export interface MappedTaskForEntry {
    id: string,
-   label: string,
+   name: string,
    task_url: string
    cells: Record<string, number>
 }
 
-export function mapTimeEntries(entries: ClickUpTimeEntry[]): MappedtimeEntry[] {
+export function mapTimeEntries(entries: ClickUpTimeEntry[]): MappedTaskForEntry[] {
    const teMap = new Map()
    for (const entry of entries) {
       const { task, task_url, start, duration } = entry
@@ -19,7 +19,7 @@ export function mapTimeEntries(entries: ClickUpTimeEntry[]): MappedtimeEntry[] {
       if (!inserted) {
          teMap.set(task.id, {
             id: task.id,
-            label: task.name,
+            name: task.name,
             task_url,
             cells: { [dayName]: hours }
          })

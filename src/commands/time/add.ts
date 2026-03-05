@@ -12,6 +12,7 @@ import { formatDate } from "../../helpers/formatDate";
 import { treeSelect, SelectedList } from "../../prompts/treeSelect";
 import * as fuzzy from "fuzzy"
 import chalk from "chalk";
+import { mapTask } from "./utils";
 
 
 interface CreateTicketOptions {
@@ -24,14 +25,6 @@ export class AddTimeEntryCommand implements CLICommand {
    constructor(opts: CreateTicketOptions) {
       this.options = opts
    }
-
-   mapTask(task: { name: string, value: ClickUpTask }) {
-      return {
-         value: task.value,
-         name: `${chalk.hex(task.value.status.color).bold(`[${task.value.status.status}]`)} - ${task.name}`
-      }
-   }
-
 
    public async execute() {
       const missing = await getMissingRequiredSettings();
@@ -92,7 +85,7 @@ export class AddTimeEntryCommand implements CLICommand {
             const fuzzySearch = fuzzy.filter(input, taskChoices, {
                extract: (item) => item.name
             });
-            return fuzzySearch.map((el) => this.mapTask(el.original));
+            return fuzzySearch.map((el) => mapTask(el.original));
          },
          theme: {
             style: {
