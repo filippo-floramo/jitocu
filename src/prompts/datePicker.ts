@@ -168,6 +168,8 @@ export const datePrompt = createPrompt<Date, DatePromptConfig>(
             const num = parseInt(key.name);
 
             if (!isNaN(num) && (field === "month" || field === "day")) {
+               if (num === 0) return;
+
                const currentValues = values;
                const currentValue = currentValues[field];
                const range: FieldRange = { ...FIELD_RANGES[field] };
@@ -243,5 +245,6 @@ export const datePrompt = createPrompt<Date, DatePromptConfig>(
          `  ${renderFields(values, fields, activeIdx)}`,
          hint,
       ].join("\n");
+      
    }
 )
