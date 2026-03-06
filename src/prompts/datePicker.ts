@@ -7,6 +7,7 @@ import {
    isUpKey,
    isDownKey,
    type KeypressEvent,
+   Status,
 } from "@inquirer/core";
 import chalk from "chalk";
 
@@ -14,7 +15,6 @@ import chalk from "chalk";
 
 type DateField = "year" | "month" | "day" | "hour" | "minute";
 type Format = "date" | "datetime";
-type Status = "active" | "done";
 
 interface FieldValues {
    year: number;
@@ -135,7 +135,7 @@ export const datePrompt = createPrompt<Date, DatePromptConfig>(
       const [activeIdx, setActiveIdx] = useState<number>(0);
       const [status, setStatus] = useState<Status>("active");
 
-      const prefix = usePrefix({});
+      const prefix = usePrefix({ status });
 
       useKeypress((key: KeypressEvent) => {
          if (status !== "active") return;
@@ -233,7 +233,7 @@ export const datePrompt = createPrompt<Date, DatePromptConfig>(
 
       // ── Render ─────────────────────────────────────────────────────────────────
       if (status === "done") {
-         return `${prefix} ${chalk.bold(config.message)} ${chalk.green(
+         return `${prefix} Date Selected: ${chalk.green(
             formatResult(values, format)
          )}`;
       }
@@ -245,6 +245,6 @@ export const datePrompt = createPrompt<Date, DatePromptConfig>(
          `  ${renderFields(values, fields, activeIdx)}`,
          hint,
       ].join("\n");
-      
+
    }
 )

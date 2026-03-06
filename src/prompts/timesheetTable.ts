@@ -8,7 +8,7 @@ import chalk from 'chalk';
 import { DAYS_MAP } from '../helpers';
 import { MappedTaskForEntry } from '../helpers/mapTimeEntries';
 import { truncate } from '../helpers/truncate';
-
+import { Status } from '@inquirer/core';
 interface TimeSheetConfig {
   message: string;
   rows: MappedTaskForEntry[];
@@ -30,16 +30,17 @@ export type TimeSheetResult =
 const spreadsheetTable = createPrompt<TimeSheetResult, TimeSheetConfig>((config, done) => {
   const [selectedRow, setSelectedRow] = useState(0);
   const [selectedCol, setSelectedCol] = useState(0);
-  const [isDone, setIsDone] = useState(false)
+  const [status, setStatus] = useState<{ type: Status, doneMessage: string }>({
+    type: 'idle',
+    doneMessage: ''
+  })
   const theme = makeTheme({
-    theme: {
-      prefix: {
-        idle: "🗒️",
-        done: "✔︎︎"
-      }
+    prefix: {
+      idle: "🗒️",
+      done: "✔︎︎"
     }
   })
-  const prefix = usePrefix({ theme })
+  const prefix = usePrefix({ status: status.type, theme })
 
   // ANSI escape code to hide cursor
   const hideCursor = '\x1B[?25l';
@@ -68,11 +69,17 @@ const spreadsheetTable = createPrompt<TimeSheetResult, TimeSheetConfig>((config,
         break;
       case 'q':
       case 'escape':
-        setIsDone(true)
+        setStatus({
+          type: "done",
+          doneMessage: 'Exited with no further actions.'
+        })
         done({ type: 'action', action: 'close' });
         break;
       case 'a':
-        setIsDone(true)
+        setStatus({
+          type: 'done',
+          doneMessage: 'Add new time entry from task requested'
+        })
         done({ type: 'action', action: 'add' })
         break;
       default:
@@ -83,18 +90,21 @@ const spreadsheetTable = createPrompt<TimeSheetResult, TimeSheetConfig>((config,
             day: DAYS_MAP[selectedDay as keyof typeof DAYS_MAP],
             dayName: selectedDay
           };
-          setIsDone(true)
+          setStatus({
+            type: 'done',
+            doneMessage: `Selected Task:  ${selectedRowData.name}`
+          })
           done({ type: 'cell', selection: cellData });
         }
         break;
     }
   });
 
-  if (isDone) {
-    return `${prefix} Selected Task ${selectedRowData.name}`
+  if (status.type === 'done') {
+    return `${prefix} ${status.doneMessage}`
   }
 
-  let output = hideCursor + chalk.bold(config.message) + '\n\n';
+  let output = `${hideCursor} ${prefix}  ${chalk.bold(config.message)}\n\n`;
 
   // Calculate column widths
   const MAX_LABEL_WIDTH = 38
@@ -148,7 +158,7 @@ const spreadsheetTable = createPrompt<TimeSheetResult, TimeSheetConfig>((config,
 
   // Instruction s
   output += '\n';
-  output += chalk.dim('  ←↑↓→: Navigate │ Enter: Select cell │ Q/Esc: Done');
+  output += chalk.dim('  ←↑↓→: Navigate │ Enter: Select cell │ A: Add from Task Mode │  Q/Esc: Done');
 
   return output;
 });

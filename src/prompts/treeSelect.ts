@@ -9,6 +9,7 @@ import {
    isBackspaceKey,
    makeTheme,
    type Theme,
+   Status,
 } from "@inquirer/core";
 import chalk from "chalk";
 import { ClickUpFolder } from "../services/clickUp";
@@ -102,14 +103,13 @@ export const treeSelect = createPrompt<SelectedList, TreeSelectConfig>(
    (config, done) => {
       const { message, folders, pageSize = 12 } = config;
       const theme = makeTheme(config.theme);
-      const prefix = usePrefix({ theme });
 
       const hideCursor = '\x1B[?25l';
       const rows = flattenFolders(folders);
-
       const [cursorPos, setCursorPos] = useState(0);
-      const [isDone, setIsDone] = useState(false);
+      const [status, setStatus] = useState<Status>('idle');
       const [searchQuery, setSearchQuery] = useState("");
+      const prefix = usePrefix({ theme, status });
       const normalizedQuery = searchQuery.trim().toLowerCase();
 
       // Filter rows based on search query
@@ -136,7 +136,7 @@ export const treeSelect = createPrompt<SelectedList, TreeSelectConfig>(
       const activeFlatIndex = filteredSelectable[cursorPos];
 
       useKeypress((key) => {
-         if (isDone) return;
+         if (status === 'done') return;
 
          if (isUpKey(key)) {
             setCursorPos((cursorPos - 1 + filteredSelectable.length) % filteredSelectable.length);
@@ -145,7 +145,7 @@ export const treeSelect = createPrompt<SelectedList, TreeSelectConfig>(
          } else if (isEnterKey(key)) {
             if (filteredSelectable.length > 0) {
                const selected = filteredRows[activeFlatIndex] as ListRow;
-               setIsDone(true);
+               setStatus('done');
                done(selected.value);
             }
          } else if (isBackspaceKey(key)) {
@@ -161,9 +161,9 @@ export const treeSelect = createPrompt<SelectedList, TreeSelectConfig>(
       });
 
       // ── Completed state ──────────────────────────────────────────────────────
-      if (isDone) {
+      if (status === 'done') {
          const selected = filteredRows[activeFlatIndex] as ListRow;
-         return `${prefix} ${message} ${selected.short}`;
+         return `${prefix} List Selected: ${chalk.yellow(selected.short)}`;
       }
 
       // ── Windowed rendering ───────────────────────────────────────────────────
