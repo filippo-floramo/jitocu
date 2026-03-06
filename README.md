@@ -1,6 +1,6 @@
 # jitocu
 
-**Jira to ClickUp** - Copy Jira issues assigned to you to ClickUp with an interactive terminal UI.
+**Jira to ClickUp** - Copy Jira issues assigned to you to ClickUp and manage time entries with an interactive terminal UI.
 
 ## Prerequisites
 
@@ -41,9 +41,9 @@ jitocu config
 ### ClickUp API Token
 
 1. Log in to your ClickUp account
-1. Click your avatar in the bottom-left corner
+1. Click your avatar in the top-right corner
 1. Select **Settings**
-1. Click **Apps** in the left sidebar
+1. Click **ClickUp API** in the left sidebar
 1. Under "API Token", click **Generate** (or **Regenerate** if you already have one)
 1. Click **Copy** to copy your API token
 1. Store it securely - you won't be able to see it again
@@ -124,6 +124,83 @@ jitocu create --key PROJ-123 --list "My List Name"
 jitocu create -k PROJ-456 -l "Sprint Backlog"
 ```
 
+### Time Entry Management
+
+Manage time entries for your ClickUp tasks with interactive timesheets and manual entry.
+
+#### Interactive Time Management
+
+View and manage time entries in a spreadsheet-like interface:
+
+```bash
+jitocu time
+```
+
+**Workflow:**
+
+1. 📅 **Select Week Range** - Choose from current and previous weeks
+2. 📊 **View Timesheet** - Interactive table showing tasks and time entries
+3. ⏰ **Add Time** - Click cells to add time or use keyboard shortcuts
+4. ✏️ **Time Entry** - Enter time using natural language (e.g., "from 9am to 5pm")
+
+**Timesheet Navigation:**
+
+- **Arrow Keys/ hjkl**: Navigate cells
+- **Enter**: Select cell to add/edit time
+- **A**: Add time entry from task selection mode
+- **Q/Esc**: Exit
+
+#### Manual Time Entry
+
+Add time entries directly without the timesheet interface:
+
+```bash
+jitocu time add --list "My List Name"
+```
+
+**Optional flags:**
+
+- `-l, --list <LIST-NAME>` - ClickUp list name (prompts if not provided)
+
+**Time Entry Formats:**
+
+**Basic Time Range:**
+
+- `"from 9:00 to 17:00"` - 9 AM to 5 PM
+- `"from 9 to 17"` - Whole hours (9 AM to 5 PM)
+- `"from 9:30 to 17:30"` - With minutes
+
+**Duration-Based:**
+
+- `"from 9:00 duration 4h"` - Starting at 9 AM for 4 hours
+- `"from 9:30 duration 2h30m"` - Starting at 9:30 AM for 2.5 hours
+- `"from 14:00 duration 1h59m"` - Starting at 2 PM for 1 hour 59 minutes
+
+**Multiple Time Blocks:**
+
+- `"from 9:00 to 12:00 and from 13:00 to 17:00"` - Split workday with lunch break
+- `"from 9:00 to 12:00 and from 13:00 duration 4h"` - Mixed range and duration
+
+**Edge Cases:**
+
+- `"from 22:00 to 2:00"` - Overnight work (10 PM to 2 AM next day)
+- `"from 0:00 to 0:00"` - Full 24-hour period
+- `"from 23:59 duration 2h"` - Starting at 11:59 PM
+
+**Notes:**
+
+- Case insensitive: `"FROM 9:00 TO 17:00"` works
+- Extra whitespace is ignored
+- Single digit hours don't need leading zeros: `"from 9:5 to 17:30"`
+- Duration must include hours (minutes only not allowed: `"duration 30m"` invalid)
+
+**Example:**
+
+```bash
+jitocu time add -l "Development Tasks"
+# Then select task, date, and enter time like "from 9am to 5pm"
+```
+
 ## Tech Stack
 
 - **Runtime**: [Bun](https://bun.sh)
@@ -187,10 +264,13 @@ bun test
 ### Key Features
 
 - Type-safe API clients for Jira and ClickUp
-- Persistent configuration storage with JSON
-- Interactive CLI with fuzzy search
+- Interactive CLI with fuzzy search for issues and tasks
+- **Time entry management** with spreadsheet-like timesheet interface
+- **Natural language time parsing** (e.g., "from 9am to 5pm")
+- **Interactive date picker** and tree navigation for folders/lists
 - Loading states and error handling
 - Atomic settings updates
+- Persistent configuration storage with JSON
 
 ## License
 
