@@ -27,7 +27,7 @@ export type TimeSheetResult =
 
 
 
-const spreadsheetTable = createPrompt<TimeSheetResult, TimeSheetConfig>((config, done) => {
+const timesheetTable = createPrompt<TimeSheetResult, TimeSheetConfig>((config, done) => {
   const [selectedRow, setSelectedRow] = useState(0);
   const [selectedCol, setSelectedCol] = useState(0);
   const [status, setStatus] = useState<{ type: Status, doneMessage: string }>({
@@ -165,4 +165,4 @@ const spreadsheetTable = createPrompt<TimeSheetResult, TimeSheetConfig>((config,
 
 
 
-export default spreadsheetTable;
+export default timesheetTable;

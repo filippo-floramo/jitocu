@@ -9,7 +9,7 @@ import { formatDate } from "../../helpers/formatDate";
 import { SelectedList, treeSelect } from "../../prompts/treeSelect";
 import { mapTask } from "./utils";
 import { datePrompt } from "../../prompts/datePicker";
-import spreadsheetTable from "../../prompts/timesheetTable";
+import timesheetTable from "../../prompts/timesheetTable";
 import chalk from "chalk";
 import fuzzy from "fuzzy";
 
@@ -119,7 +119,7 @@ export class DefaultTimeCommand implements CLICommand {
       )
 
       // Get selected cell from timesheet table
-      const timesheetAnswer = await spreadsheetTable({
+      const timesheetAnswer = await timesheetTable({
          message: "Weekly time report",
          rows: timeEntries,
       })

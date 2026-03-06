@@ -4,7 +4,7 @@
  * Shows interactive spreadsheet-style time entry table
  */
 
-import spreadsheetTable from "../src/prompts/timesheetTable";
+import timesheetTable from "../src/prompts/timesheetTable";
 import { MappedTaskForEntry } from "../src/helpers/mapTimeEntries";
 
 // Sample time entries data for demo (matching MappedTaskForEntry interface)
@@ -79,7 +79,7 @@ async function runTimesheetTableDemo() {
   console.log("");
 
   try {
-    const result = await spreadsheetTable({
+    const result = await timesheetTable({
       message: "Weekly time report - Select a cell to add time entry:",
       rows: sampleTimeEntries,
     });
