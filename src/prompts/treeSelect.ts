@@ -1,8 +1,10 @@
 import {
    createPrompt,
+   useMemo,
    useState,
    useKeypress,
    usePrefix,
+   usePagination,
    isUpKey,
    isDownKey,
    isEnterKey,
@@ -105,94 +107,93 @@ export const treeSelect = createPrompt<SelectedList, TreeSelectConfig>(
       const theme = makeTheme(config.theme);
 
       const hideCursor = '\x1B[?25l';
-      const rows = flattenFolders(folders);
-      const [cursorPos, setCursorPos] = useState(0);
+      const [activeSelectableIdx, setActiveSelectableIdx] = useState(0);
       const [status, setStatus] = useState<Status>('idle');
       const [searchQuery, setSearchQuery] = useState("");
       const prefix = usePrefix({ theme, status });
+      const rows = useMemo(() => flattenFolders(folders), [folders]);
       const normalizedQuery = searchQuery.trim().toLowerCase();
 
       // Filter rows based on search query
-      const filteredRows = normalizedQuery
-         ? flattenFolders(
-            folders
-               .map((folder) => {
-                  const filteredLists = folder.lists.filter((list) => {
-                     const displayName = getDisplayListName(folder.name, list.name);
-                     return displayName.toLowerCase().includes(normalizedQuery);
-                  });
+      const filteredRows = useMemo(
+         () => normalizedQuery
+            ? flattenFolders(
+               folders
+                  .map((folder) => {
+                     const filteredLists = folder.lists.filter((list) => {
+                        const displayName = getDisplayListName(folder.name, list.name);
+                        return displayName.toLowerCase().includes(normalizedQuery);
+                     });
 
-                  return {
-                     ...folder,
-                     lists: filteredLists,
-                  };
-               })
-               .filter((folder) => folder.lists.length > 0)
-         )
-         : rows;
+                     return {
+                        ...folder,
+                        lists: filteredLists,
+                     };
+                  })
+                  .filter((folder) => folder.lists.length > 0)
+            )
+            : rows,
+         [normalizedQuery, folders, rows]
+      );
 
-      const filteredSelectable = selectableIndices(filteredRows);
+      const filteredSelectable = useMemo(() => selectableIndices(filteredRows), [filteredRows]);
+      const safeSelectableIdx = filteredSelectable.length === 0
+         ? 0
+         : Math.min(activeSelectableIdx, filteredSelectable.length - 1);
+      const activeFlatIndex = filteredSelectable[safeSelectableIdx] ?? -1;
 
-      const activeFlatIndex = filteredSelectable[cursorPos];
+      const page = usePagination({
+         items: filteredRows,
+         active: Math.max(activeFlatIndex, 0),
+         renderItem({ item, isActive }) {
+            if (item.kind === "folder") {
+               return chalk.dim(item.label);
+            }
+
+            return isActive
+               ? chalk.cyan(`❯ ${item.label}`)
+               : `  ${item.label}`;
+         },
+         pageSize,
+         loop: false,
+      });
 
       useKeypress((key) => {
          if (status === 'done') return;
 
          if (isUpKey(key)) {
-            setCursorPos((cursorPos - 1 + filteredSelectable.length) % filteredSelectable.length);
-         } else if (isDownKey(key)) {
-            setCursorPos((cursorPos + 1) % filteredSelectable.length);
-         } else if (isEnterKey(key)) {
             if (filteredSelectable.length > 0) {
+               setActiveSelectableIdx((safeSelectableIdx - 1 + filteredSelectable.length) % filteredSelectable.length);
+            }
+         } else if (isDownKey(key)) {
+            if (filteredSelectable.length > 0) {
+               setActiveSelectableIdx((safeSelectableIdx + 1) % filteredSelectable.length);
+            }
+         } else if (isEnterKey(key)) {
+            if (activeFlatIndex !== -1) {
                const selected = filteredRows[activeFlatIndex] as ListRow;
                setStatus('done');
                done(selected.value);
             }
          } else if (isBackspaceKey(key)) {
             setSearchQuery(searchQuery.slice(0, -1));
-            setCursorPos(0);
+            setActiveSelectableIdx(0);
          } else if (key.name === 'escape') {
             setSearchQuery("");
-            setCursorPos(0);
+            setActiveSelectableIdx(0);
          } else if (key.name && key.name.length === 1 && !key.ctrl) {
             setSearchQuery(searchQuery + key.name);
-            setCursorPos(0);
+            setActiveSelectableIdx(0);
          }
       });
 
       // ── Completed state ──────────────────────────────────────────────────────
       if (status === 'done') {
          const selected = filteredRows[activeFlatIndex] as ListRow;
-         return `${prefix} List Selected: ${chalk.yellow(selected.short)}`;
+         return selected
+            ? `${prefix} List Selected: ${chalk.yellow(selected.short)}`
+            : `${prefix} List Selected`;
       }
-
-      // ── Windowed rendering ───────────────────────────────────────────────────
-      const half = Math.floor(pageSize / 2);
-
-      // Calculate window start, ensuring it doesn't go negative
-      let windowStart = Math.max(0, activeFlatIndex - half);
-
-      // Ensure window doesn't exceed the total rows
-      if (windowStart + pageSize > filteredRows.length) {
-         windowStart = Math.max(0, filteredRows.length - pageSize);
-      }
-
-      const windowEnd = Math.min(filteredRows.length, windowStart + pageSize);
-      const visibleRows = filteredRows.slice(windowStart, windowEnd);
-
-      const lines = visibleRows.map((row, wi) => {
-         const absoluteIndex = windowStart + wi;
-
-         if (row.kind === "folder") {
-            // Folder rows: dimmed, never highlighted
-            return chalk.dim(row.label);
-         }
-
-         const isActive = absoluteIndex === activeFlatIndex;
-         return isActive
-            ? chalk.cyan(`❯ ${row.label}`)
-            : `  ${row.label}`;
-      });
 
       const header = `${prefix} ${(theme.style.message(message, 'idle'))}`;
 
@@ -204,10 +205,14 @@ export const treeSelect = createPrompt<SelectedList, TreeSelectConfig>(
          ? chalk.dim("  (↑↓ navigate, Enter select, Esc clear, Backspace delete)")
          : chalk.dim("  (↑↓ navigate, Enter select, type to search)");
 
+      const body = filteredRows.length === 0
+         ? chalk.dim("  No matching lists found")
+         : page;
+
       return [
          `${hideCursor}${header}`,
          searchLine,
-         ...lines,
+         body,
          instructions
       ].join('\n');
    }
