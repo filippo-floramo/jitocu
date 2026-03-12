@@ -126,7 +126,7 @@ const timesheetTable = createPrompt<TimeSheetResult, TimeSheetConfig>((config, d
 
   // Data rows
   if (config.rows.length === 0) {
-    output += chalk.dim('  No rows. Press Ctrl+A to add items.\n');
+    output += chalk.dim('  No rows. Press A to add entries.\n');
   } else {
     config.rows.forEach((row, rowIdx) => {
       const isRowSelected = rowIdx === selectedRow;
@@ -152,9 +152,9 @@ const timesheetTable = createPrompt<TimeSheetResult, TimeSheetConfig>((config, d
       });
       output += '\n';
     });
+    output += '\n Task: ' + chalk.hex("#299549b8").bold(selectedRowData.name) + '\n'
   }
 
-  output += '\n Task: ' + chalk.hex("#299549b8").bold(selectedRowData.name) + '\n'
 
   // Instruction s
   output += '\n';

@@ -1,5 +1,5 @@
 import { select, input, search, confirm } from "@inquirer/prompts";
-import { ConfigError } from "../../errors";
+import { ConfigError, CLIError } from "../../errors";
 import { ClickUpFolder, ClickUpService, ClickUpTask } from "../../services/clickUp";
 import { getMissingRequiredSettings } from "../../store/utils/getMissingRequiredSettings";
 import { showMissingSettignsPaths } from "../../store/utils/showMissingSettingsPaths";
@@ -76,6 +76,10 @@ export class DefaultTimeCommand implements CLICommand {
             failText: "Failed to fetch tasks"
          }
       )
+
+      if (tasks.length === 0) {
+         throw new CLIError("No tasks found.")
+      }
 
       const taskChoices = tasks.map((task) => ({ name: (task.name), value: task }))
 

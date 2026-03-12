@@ -4,7 +4,7 @@ import { showMissingSettignsPaths } from "../../store/utils/showMissingSettingsP
 import { input, search, select } from "@inquirer/prompts";
 import { ClickUpFolder, ClickUpService, ClickUpTask } from "../../services/clickUp";
 import { withSpinner } from "../../helpers/withSpinner";
-import { ConfigError } from "../../errors";
+import { CLIError, ConfigError } from "../../errors";
 import { datePrompt } from "../../prompts/datePicker";
 import { parseRanges } from "../../helpers";
 import { truncate } from "../../helpers/truncate";
@@ -74,9 +74,10 @@ export class AddTimeEntryCommand implements CLICommand {
             failText: "Failed to fetch tasks"
          }
       )
-
+      if (tasks.length === 0) {
+         throw new CLIError("No tasks found.")
+      }
       const taskChoices = tasks.map((task) => ({ name: (task.name), value: task }))
-
       const selectedTask = await search({
          message: "Select ClickUp task",
          pageSize: 20,

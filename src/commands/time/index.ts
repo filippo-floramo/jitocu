@@ -25,7 +25,7 @@ export function timeCommand() {
             await command.execute()
             process.exit(0)
          } catch (error) {
-            handleError(console.error());
+            handleError(error);
          }
       })
 
