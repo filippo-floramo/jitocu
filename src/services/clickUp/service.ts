@@ -2,9 +2,11 @@ import type { Store } from "../../store/store";
 import { ClickUpAPI } from "./api";
 import fuzzy from 'fuzzy';
 import { ClickUpTask, CreateTimeEntryPayload } from "./types";
-import { CLIError } from "../../errors";
+import { CLIError, ConfigError } from "../../errors";
 import { mapTimeEntries } from "../../helpers/mapTimeEntries";
 import type { JiraIssueChoiceValue } from "../jira/types";
+import { getMissingRequiredSettings } from "../../store/utils/getMissingRequiredSettings";
+import { showMissingSettignsPaths } from "../../store/utils/showMissingSettingsPaths";
 
 export class ClickUpService {
    private api: ClickUpAPI | null = null;
@@ -13,6 +15,11 @@ export class ClickUpService {
 
    private getApi(): ClickUpAPI {
       if (!this.api) {
+         const missing = getMissingRequiredSettings(this.store).filter((path) => path.startsWith("clickUp."));
+         if (missing.length > 0) {
+            throw new ConfigError("Missing configuration:", () => showMissingSettignsPaths(missing));
+         }
+
          const workspaceId = this.store.get("settings.clickUp.workspaceId") as string;
          const apiToken = this.store.get("settings.clickUp.apiToken") as string;
          this.api = new ClickUpAPI({ workspaceId, apiToken })

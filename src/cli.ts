@@ -5,13 +5,14 @@ import { timeCommand } from "./commands/time";
 import { DefaultCLICommand } from "./commands/default";
 import { createContext } from "./context";
 import { run } from "./commands/shared/run";
+import packageJson from "../package.json" with { type: "json" };
 
 const program = new Command();
 
 program
   .name("jitocu")
   .description("Copy Jira issues assigned to you to ClickUp")
-  .version("0.1.0");
+  .version(packageJson.version);
 
 const ctx = await createContext();
 

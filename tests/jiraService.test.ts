@@ -4,7 +4,8 @@ import type { Store } from '../src/store/store';
 
 function fakeStore(settings: Record<string, string>): Store {
    return {
-      get: (key: string) => settings[key]
+      get: (key: string) => settings[key],
+      has: (key: string) => settings[key] !== undefined
    } as unknown as Store;
 }
 
