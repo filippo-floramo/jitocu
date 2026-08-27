@@ -1,4 +1,5 @@
-import { APIError } from '../../errors';
+import { APIError, CLIError, ConfigError } from '../../errors';
+import { apiFetch } from '../shared/apiFetch';
 import type {
    ClickUpCreateTaskRequest,
    ClickUpFolder,
@@ -19,7 +20,7 @@ export class ClickUpAPI {
 
    constructor({ workspaceId, apiToken }: { workspaceId: string, apiToken: string }) {
       if (!apiToken || !workspaceId) {
-         throw new Error('Missing ClickUp configuration');
+         throw new ConfigError('Missing ClickUp configuration');
       }
       this.workspaceId = workspaceId;
       this.apiToken = apiToken
@@ -27,7 +28,7 @@ export class ClickUpAPI {
 
    public async createTaskByListId(issue: string, listId: string, userId?: number): Promise<ClickUpTask> {
       if (!listId) {
-         throw new Error('Missing ClickUp List Id');
+         throw new CLIError('Missing ClickUp List Id');
       }
       const url = `${this.baseUrl}/list/${listId}/task`;
       const taskData: ClickUpCreateTaskRequest = {
@@ -35,7 +36,7 @@ export class ClickUpAPI {
          assignees: userId ? [Number(userId)] : []
       };
 
-      const response = await fetch(url, {
+      const response = await apiFetch("ClickUp", url, {
          method: 'POST',
          headers: {
             'Authorization': this.apiToken,
@@ -55,12 +56,12 @@ export class ClickUpAPI {
 
    public async getTasksByListId(listId: string, usrId?: string): Promise<ClickUpTask[]> {
       if (!listId) {
-         throw new APIError('Missing ClickUp List Id');
+         throw new CLIError('Missing ClickUp List Id');
       }
 
       const queryParm = `?include_closed=true${usrId ? `&assignees[]=${usrId}` : ""}`
       const url = `${this.baseUrl}/list/${listId}/task${queryParm}`;
-      const response = await fetch(url, {
+      const response = await apiFetch("ClickUp", url, {
          headers: {
             'Authorization': this.apiToken
          },
@@ -75,7 +76,7 @@ export class ClickUpAPI {
 
    public async createTimeEntry(body: CreateTimeEntryPayload) {
       const url = `${this.baseUrl}/team/${this.workspaceId}/time_entries`;
-      const response = await fetch(url, {
+      const response = await apiFetch("ClickUp", url, {
          method: 'POST',
          headers: {
             'Authorization': this.apiToken,
@@ -93,7 +94,7 @@ export class ClickUpAPI {
    public async getTimeEntries(range: { start: number, end: number }) {
       const queryParam = `?start_date=${range.start}&end_date=${range.end}`
       const url = `${this.baseUrl}/team/${this.workspaceId}/time_entries${queryParam}`;
-      const response = await fetch(url, {
+      const response = await apiFetch("ClickUp", url, {
          headers: {
             'Authorization': this.apiToken
          }
@@ -107,7 +108,7 @@ export class ClickUpAPI {
 
    public async getSharedFolders(): Promise<ClickUpFolder[]> {
       const url = `${this.baseUrl}/team/${this.workspaceId}/shared`;
-      const response = await fetch(url, {
+      const response = await apiFetch("ClickUp", url, {
          headers: {
             'Authorization': this.apiToken
          }
@@ -140,7 +141,7 @@ export class ClickUpAPI {
       if (this.cachedUser) return this.cachedUser;
       const url = `${this.baseUrl}/user`;
 
-      const response = await fetch(url, {
+      const response = await apiFetch("ClickUp", url, {
          headers: {
             'Authorization': this.apiToken
          }

@@ -1,6 +1,6 @@
-import { baseSettingsPath } from "../constants";
 import type { Store } from "../store";
 import { MandatorySettingsPath } from "../types";
+import { hasSetting } from "./settingAccess";
 
 
 const mandatorySettingsPaths: MandatorySettingsPath[] = [
@@ -15,7 +15,7 @@ export function getMissingRequiredSettings(store: Store): MandatorySettingsPath[
    let missing: MandatorySettingsPath[] = [];
 
    for (const path of mandatorySettingsPaths) {
-      if (!store.has(`${baseSettingsPath}.${path}` as any)) {
+      if (!hasSetting(store, path)) {
          missing.push(path)
       }
    }

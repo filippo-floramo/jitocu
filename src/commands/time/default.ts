@@ -33,7 +33,7 @@ export class DefaultTimeCommand implements CLICommand {
                parseRanges(input, targetDate)
                return true
             } catch {
-               return `Invalid time format. Use: "from 9am to 5pm" or "from 9am duration 4h"`
+               return `Invalid time format. Use: "from 9:00 to 17:00" or "from 9:00 duration 4h"`
             }
          }
       })

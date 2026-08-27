@@ -1,8 +1,6 @@
 import type { Store } from "../../store/store";
 import { JiraAPI } from "./api";
-import { getMissingRequiredSettings } from "../../store/utils/getMissingRequiredSettings";
-import { showMissingSettignsPaths } from "../../store/utils/showMissingSettingsPaths";
-import { ConfigError } from "../../errors";
+import { requireSetting } from "../../store/utils/settingAccess";
 
 export class JiraService {
    private api: JiraAPI | null = null;
@@ -11,19 +9,10 @@ export class JiraService {
 
    private getApi(): JiraAPI {
       if (!this.api) {
-         const missing = getMissingRequiredSettings(this.store).filter((path) => path.startsWith("jira."));
-         if (missing.length > 0) {
-            throw new ConfigError("Missing configuration:", () => showMissingSettignsPaths(missing));
-         }
-
-         const domain = this.store.get("settings.jira.domain") as string;
-         const email = this.store.get("settings.jira.email") as string;
-         const apiToken = this.store.get("settings.jira.apiToken") as string;
-
          this.api = new JiraAPI({
-            domain,
-            email,
-            apiToken
+            domain: requireSetting(this.store, "jira.domain"),
+            email: requireSetting(this.store, "jira.email"),
+            apiToken: requireSetting(this.store, "jira.apiToken")
          })
       }
       return this.api;

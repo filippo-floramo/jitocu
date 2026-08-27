@@ -141,7 +141,7 @@ jitocu time
 1. 📅 **Select Week Range** - Choose from current and previous weeks
 2. 📊 **View Timesheet** - Interactive table showing tasks and time entries
 3. ⏰ **Add Time** - Click cells to add time or use keyboard shortcuts
-4. ✏️ **Time Entry** - Enter time using natural language (e.g., "from 9am to 5pm")
+4. ✏️ **Time Entry** - Enter time using natural language (e.g., "from 9:00 to 17:00")
 
 **Timesheet Navigation:**
 
@@ -198,7 +198,7 @@ jitocu time add --list "My List Name"
 
 ```bash
 jitocu time add -l "Development Tasks"
-# Then select task, date, and enter time like "from 9am to 5pm"
+# Then select task, date, and enter time like "from 9:00 to 17:00"
 ```
 
 ## Tech Stack
@@ -266,7 +266,7 @@ bun test
 - Type-safe API clients for Jira and ClickUp
 - Interactive CLI with fuzzy search for issues and tasks
 - **Time entry management** with spreadsheet-like timesheet interface
-- **Natural language time parsing** (e.g., "from 9am to 5pm")
+- **Natural language time parsing** (e.g., "from 9:00 to 17:00")
 - **Interactive date picker** and tree navigation for folders/lists
 - Loading states and error handling
 - Atomic settings updates

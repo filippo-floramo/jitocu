@@ -1,3 +1,5 @@
+import { CLIError } from "../errors";
+
 type RangeType = {
    type: "range" | "duration"
    startMs: number
@@ -16,7 +18,7 @@ export function parseRanges(input: string, baseDate: Date): RangeType[] {
 
    while (nextIndex < tokens.length) {
       if (tokens[nextIndex] !== "and") {
-         throw new Error(`Expected 'AND' at ${nextIndex}`);
+         throw new CLIError(`Expected 'AND' at ${nextIndex}`);
       }
 
       const result = parseRange(tokens, nextIndex + 1, baseDate);
@@ -29,7 +31,7 @@ export function parseRanges(input: string, baseDate: Date): RangeType[] {
 
 function parseRange(tokens: string[], index: number, baseDate: Date) {
    if (tokens[index] !== "from") {
-      throw new Error(`Expected 'from' at ${index}`);
+      throw new CLIError(`Expected 'from' at ${index}`);
    }
 
    const start = parseTimeEntry(tokens[index + 1], baseDate);
@@ -66,22 +68,22 @@ function parseRange(tokens: string[], index: number, baseDate: Date) {
          if (durationStr.includes('h') && durationStr.includes('m')) {
             const parts = durationStr.match(/(\d+)h(\d+)m/);
             if (!parts) {
-               throw new Error(`Invalid duration format: ${durationStr}. Expected format: "3h20m"`);
+               throw new CLIError(`Invalid duration format: ${durationStr}. Expected format: "3h20m"`);
             }
             const hours = Number(parts[1]);
             const minutes = Number(parts[2]);
             if (Number.isNaN(hours) || Number.isNaN(minutes)) {
-               throw new Error(`Invalid duration values: ${durationStr}`);
+               throw new CLIError(`Invalid duration values: ${durationStr}`);
             }
             durationMs = (hours * 60 * 60 * 1000) + (minutes * 60 * 1000);
          } else if (durationStr.endsWith('h') && !durationStr.includes('m')) {
             const hours = Number(durationStr.slice(0, -1)); // Remove 'h' suffix
             if (Number.isNaN(hours) || hours <= 0) {
-               throw new Error(`Invalid duration hours: ${durationStr}`);
+               throw new CLIError(`Invalid duration hours: ${durationStr}`);
             }
             durationMs = hours * 60 * 60 * 1000;
          } else {
-            throw new Error(`Invalid duration format: ${durationStr}. Expected format: "4h" or "3h20m"`);
+            throw new CLIError(`Invalid duration format: ${durationStr}. Expected format: "4h" or "3h20m"`);
          }
          const startMs = start.getTime()
          const endMs = startMs + durationMs
@@ -99,7 +101,7 @@ function parseRange(tokens: string[], index: number, baseDate: Date) {
          };
       }
       default:
-         throw new Error(`Expected 'to' or 'duration' at ${index + 2}, got '${rangeType}'`);
+         throw new CLIError(`Expected 'to' or 'duration' at ${index + 2}, got '${rangeType}'`);
    }
 }
 
@@ -116,7 +118,7 @@ function parseTimeEntry(timeEntry: string, baseDate: Date): Date {
    }
 
    if (Number.isNaN(hour) || Number.isNaN(minutes)) {
-      throw new Error(`Invalid time entry: ${timeEntry}`);
+      throw new CLIError(`Invalid time entry: ${timeEntry}`);
    }
 
    const date = new Date(baseDate);

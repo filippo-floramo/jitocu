@@ -1,4 +1,5 @@
-import { APIError } from "../../errors";
+import { APIError, ConfigError } from "../../errors";
+import { apiFetch } from "../shared/apiFetch";
 import type { JiraSearchResponse, JiraIssueChoice } from "./types";
 
 export class JiraAPI {
@@ -10,8 +11,8 @@ export class JiraAPI {
 
 
    constructor({ domain, email, apiToken }: { domain: string, email: string, apiToken: string }) {
-      if (!apiToken || !email || !apiToken) {
-         throw new Error('Missing Jira configuration');
+      if (!domain || !email || !apiToken) {
+         throw new ConfigError('Missing Jira configuration');
       }
 
       this.domain = domain;
@@ -26,7 +27,7 @@ export class JiraAPI {
       const jqlQuery = `${baseJql} ORDER BY updated DESC`;
       const url = `${this.baseUrl}/search/jql?jql=${encodeURIComponent(jqlQuery)}&maxResults=50&fields=summary,description,status,issuetype,priority,labels`;
 
-      const response = await fetch(url, {
+      const response = await apiFetch("Jira", url, {
          headers: {
             'Authorization': `Basic ${this.auth}`,
             'Accept': 'application/json',
@@ -36,7 +37,7 @@ export class JiraAPI {
 
       if (!response.ok) {
          const error = await response.text();
-         throw new APIError(`Jira API error. Faled to fetch issues (${response.status}): ${error}`);
+         throw new APIError(`Jira API error. Failed to fetch issues (${response.status}): ${error}`);
       }
 
       const data = await response.json() as JiraSearchResponse;

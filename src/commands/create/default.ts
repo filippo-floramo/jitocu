@@ -4,7 +4,7 @@ import { getMissingRequiredSettings } from "../../store/utils/getMissingRequired
 import { showMissingSettignsPaths } from "../../store/utils/showMissingSettingsPaths";
 import { select } from "@inquirer/prompts";
 import { withSpinner } from "../../helpers/withSpinner";
-import { ConfigError } from "../../errors";
+import { CLIError, ConfigError } from "../../errors";
 
 interface CreateTicketOptions {
    key: string;
@@ -41,7 +41,7 @@ export class CreateTicketCommand implements CLICommand {
       );
 
       if (jiraIssues.length === 0) {
-         throw new Error("Issue not found")
+         throw new CLIError(`No Jira issue assigned to you found for key "${this.options.key}".`)
       }
 
       const res = await select({ message: "Is this your issue?", choices: jiraIssues })

@@ -12,6 +12,11 @@ function defaultConfigDir(): string {
    return path.join(xdg, 'jitocu');
 }
 
+/** Where the config file lives, for error messages that name it. */
+export function defaultConfigFilePath(): string {
+   return path.join(defaultConfigDir(), 'config.json');
+}
+
 export function createStore(options?: { cwd?: string }) {
    return new Conf<AppData>({ projectName: 'jitocu', cwd: options?.cwd ?? defaultConfigDir() });
 }

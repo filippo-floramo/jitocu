@@ -1,11 +1,12 @@
 import { settingPathsMap } from "../constants";
+import type { SettingPath } from "../types";
 
 /**
- * Validates if a given path exists in the settings map.
- * If invalid, displays error message and valid paths.
+ * Narrows an arbitrary CLI string to a known settings path, so callers can pass
+ * it to the typed store helpers without casting.
  * @param path - The setting path to validate
  * @returns true if valid, false if invalid
  */
-export function validateSettingPath(path: string): boolean {
-   return !!settingPathsMap[path as keyof typeof settingPathsMap]
+export function validateSettingPath(path: string): path is SettingPath {
+   return Object.hasOwn(settingPathsMap, path)
 }

@@ -1,10 +1,10 @@
 import { CLICommand } from "../shared/command.interface";
 import type { AppContext } from "../../context";
-import { baseSettingsPath } from "../../store/constants";
 import { validateSettingPath } from "../../store/utils/validateSettingPath";
 import { ConfigError } from "../../errors";
 import { showValidPaths } from "../../store/utils/showValidPaths";
 import { maskValueAtPath } from "../../store/utils/maskSecrets";
+import { fullSettingPath, getSetting } from "../../store/utils/settingAccess";
 
 export class GetSettingsCommand implements CLICommand {
    constructor(
@@ -14,11 +14,12 @@ export class GetSettingsCommand implements CLICommand {
    ) { }
 
    public async execute(): Promise<void> {
-      if (!validateSettingPath(this.path)) {
-         throw new ConfigError(`Invalid Path ${this.path}`, showValidPaths)
+      const path = this.path;
+
+      if (!validateSettingPath(path)) {
+         throw new ConfigError(`Invalid Path ${path}`, showValidPaths)
       }
-      const fullPath = `${baseSettingsPath}.${this.path}`;
-      const value = this.ctx.store.get(fullPath as any);
-      console.log(this.reveal ? value : maskValueAtPath(fullPath, value));
+      const value = getSetting(this.ctx.store, path);
+      console.log(this.reveal ? value : maskValueAtPath(fullSettingPath(path), value));
    }
 }

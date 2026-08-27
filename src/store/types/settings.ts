@@ -11,6 +11,12 @@ export type MandatorySettingsPath =
    | "clickUp.workspaceId"
    | "clickUp.apiToken"
 
+/**
+ * Every settable settings path. All of them are mandatory today, so this is an
+ * alias — it exists so path helpers don't have to claim a path is mandatory.
+ */
+export type SettingPath = MandatorySettingsPath
+
 
 interface JiraSettings {
    domain: string,
