@@ -2,12 +2,10 @@ import { search } from "@inquirer/prompts";
 import { ClickUpFolder } from "../services/clickUp";
 import { JiraIssueChoice } from "../services/jira";
 import type { AppContext } from "../context";
-import { getMissingRequiredSettings } from "../store/utils/getMissingRequiredSettings";
-import { showMissingSettignsPaths } from "../store/utils/showMissingSettingsPaths";
 import { withSpinner } from "../helpers/withSpinner";
-import { ConfigError } from "../errors";
 import fuzzy from 'fuzzy';
 import { CLICommand } from "./shared/command.interface";
+import { assertConfigured } from "./shared/assertConfigured";
 import { treeSelect } from "../prompts/treeSelect";
 
 
@@ -17,11 +15,7 @@ export class DefaultCLICommand implements CLICommand {
    ) { }
 
    async execute(): Promise<void> {
-      const missing = getMissingRequiredSettings(this.ctx.store);
-
-      if (missing.length > 0) {
-         throw new ConfigError("Missing configuration:", () => showMissingSettignsPaths(missing))
-      }
+      assertConfigured(this.ctx);
 
       const jiraSrv = this.ctx.jira;
       const clickUpSrv = this.ctx.clickUp;

@@ -1,10 +1,9 @@
 import { CLICommand } from "../shared/command.interface";
+import { assertConfigured } from "../shared/assertConfigured";
 import type { AppContext } from "../../context";
-import { getMissingRequiredSettings } from "../../store/utils/getMissingRequiredSettings";
-import { showMissingSettignsPaths } from "../../store/utils/showMissingSettingsPaths";
 import { select } from "@inquirer/prompts";
 import { withSpinner } from "../../helpers/withSpinner";
-import { CLIError, ConfigError } from "../../errors";
+import { CLIError } from "../../errors";
 
 interface CreateTicketOptions {
    key: string;
@@ -22,11 +21,7 @@ export class CreateTicketCommand implements CLICommand {
    }
 
    public async execute() {
-      const missing = getMissingRequiredSettings(this.ctx.store);
-
-      if (missing.length > 0) {
-         throw new ConfigError("Missing configuration:", () => showMissingSettignsPaths(missing))
-      }
+      assertConfigured(this.ctx);
 
       const jiraSrv = this.ctx.jira;
       const clickUpSrv = this.ctx.clickUp;
