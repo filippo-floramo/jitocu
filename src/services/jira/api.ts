@@ -1,5 +1,4 @@
 import { APIError } from "../../errors";
-import { JSONStore } from "../../store/JSONStore";
 import type { JiraSearchResponse, JiraIssueChoice } from "./types";
 
 export class JiraAPI {
@@ -43,7 +42,7 @@ export class JiraAPI {
       const data = await response.json() as JiraSearchResponse;
       return data.issues.map((issue): JiraIssueChoice => ({
          name: `${issue.key} - ${issue.fields.summary}`,
-         value: issue.fields.summary
+         value: { key: issue.key, summary: issue.fields.summary }
       }));
 
    }

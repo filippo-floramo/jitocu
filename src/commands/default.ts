@@ -1,6 +1,7 @@
-import { search, select } from "@inquirer/prompts";
-import { ClickUpFolder, ClickUpService } from "../services/clickUp";
-import { JiraIssueChoice, JiraService } from "../services/jira";
+import { search } from "@inquirer/prompts";
+import { ClickUpFolder } from "../services/clickUp";
+import { JiraIssueChoice } from "../services/jira";
+import type { AppContext } from "../context";
 import { getMissingRequiredSettings } from "../store/utils/getMissingRequiredSettings";
 import { showMissingSettignsPaths } from "../store/utils/showMissingSettingsPaths";
 import { withSpinner } from "../helpers/withSpinner";
@@ -11,16 +12,19 @@ import { treeSelect } from "../prompts/treeSelect";
 
 
 export class DefaultCLICommand implements CLICommand {
+   constructor(
+      private ctx: AppContext
+   ) { }
 
    async execute(): Promise<void> {
-      const missing = await getMissingRequiredSettings();
+      const missing = getMissingRequiredSettings(this.ctx.store);
 
       if (missing.length > 0) {
          throw new ConfigError("Missing configuration:", () => showMissingSettignsPaths(missing))
       }
 
-      const jiraSrv = await JiraService.getInstance();
-      const clickUpSrv = await ClickUpService.getInstance();
+      const jiraSrv = this.ctx.jira;
+      const clickUpSrv = this.ctx.clickUp;
 
       const jiraIssues: JiraIssueChoice[] = await withSpinner(
          async () => await jiraSrv.getMyIssues(),
@@ -60,17 +64,19 @@ export class DefaultCLICommand implements CLICommand {
 
       const selectedListId = selectedList.listId;
 
+      const answerLabel = `${answer.key} - ${answer.summary}`;
+
       console.log(' ');
       await withSpinner(
          async () => await clickUpSrv.createTaskAssignedToMe(answer, selectedListId),
          {
-            text: `Creating task: ${answer}`,
+            text: `Creating task: ${answerLabel}`,
             successText: `Task created`,
-            failText: `Failed to create task: ${answer}`
+            failText: `Failed to create task: ${answerLabel}`
          }
       )
 
       console.log();
-      console.log(`✅ Successfully created  task ${answer} in ClickUp!`);
+      console.log(`✅ Successfully created  task ${answerLabel} in ClickUp!`);
    }
 }

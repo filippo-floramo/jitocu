@@ -1,5 +1,5 @@
 import { CLICommand } from "../shared/command.interface";
-import { getJSONStore } from "../../store/JSONStore";
+import type { AppContext } from "../../context";
 import { getMissingRequiredSettings } from "../../store/utils/getMissingRequiredSettings";
 import { showMissingSettignsPaths } from "../../store/utils/showMissingSettingsPaths";
 import { baseSettingsPath, settingPathsMap } from "../../store/constants";
@@ -7,10 +7,14 @@ import { confirm, input, password } from "@inquirer/prompts";
 import chalk from "chalk";
 
 export class DefaultConfigCommand implements CLICommand {
-   public async execute(): Promise<void> {
-      const store = getJSONStore();
+   constructor(
+      private ctx: AppContext
+   ) { }
 
-      const missing = await getMissingRequiredSettings();
+   public async execute(): Promise<void> {
+      const store = this.ctx.store;
+
+      const missing = getMissingRequiredSettings(store);
       if (missing.length > 0) {
          showMissingSettignsPaths(missing);
 
@@ -18,7 +22,7 @@ export class DefaultConfigCommand implements CLICommand {
 
          if (isInteractive) {
             for (const missingPath of missing) {
-               let answer;
+               let answer: string;
                switch (missingPath) {
                   case "clickUp.apiToken":
                   case "jira.apiToken":
@@ -34,7 +38,7 @@ export class DefaultConfigCommand implements CLICommand {
                      });
                      break;
                }
-               await store.updatePath(`${baseSettingsPath}.${missingPath}`, answer);
+               store.set(`${baseSettingsPath}.${missingPath}`, answer);
             }
             console.log(chalk.green("✅ All missing settings are configured!"));
          }

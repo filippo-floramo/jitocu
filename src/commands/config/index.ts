@@ -4,71 +4,34 @@ import { SetSettingsCommand } from "./set";
 import { GetSettingsCommand } from "./get";
 import { ListSettingsCommand } from "./list";
 import { ClearStoreCommand } from "./clear";
-import { handleError } from "../../errors/handleError";
+import { run } from "../shared/run";
+import type { AppContext } from "../../context";
 
-export function configCommand(): Command {
+export function configCommand(ctx: AppContext): Command {
    const config = new Command('config')
       .description("Configure CLI settings (Jira/ClickUp clients, preferences)")
-      .action(async () => {
-         try {
-            const command = new DefaultConfigCommand();
-            await command.execute();
-            process.exit(0);
-         } catch (error) {
-            handleError(error);
-         }
-      });
+      .action(async () => run(ctx, (c) => new DefaultConfigCommand(c)));
 
    config.command('set')
       .description("Set a configuration value")
       .argument("<path>", 'Configuration Path (e.g. jira.domain)')
       .argument("<value>", "Configuration value")
-      .action(async (path, value) => {
-         try {
-            const command = new SetSettingsCommand(path, value);
-            await command.execute();
-            process.exit(0);
-         } catch (error) {
-            handleError(error);
-         }
-      });
+      .action(async (path, value) => run(ctx, (c) => new SetSettingsCommand(c, path, value)));
 
    config.command('get')
       .description("Get configuration value")
       .argument("<path>", 'Configuration Path (e.g. jira.domain)')
-      .action(async (path) => {
-         try {
-            const command = new GetSettingsCommand(path);
-            await command.execute();
-            process.exit(0);
-         } catch (error) {
-            handleError(error)
-         }
-      });
+      .option("--reveal", "Show secret values unmasked")
+      .action(async (path, options) => run(ctx, (c) => new GetSettingsCommand(c, path, options.reveal)));
 
    config.command('list')
       .description("List all current configuration settings in raw data format")
-      .action(async () => {
-         try {
-            const command = new ListSettingsCommand();
-            await command.execute();
-            process.exit(0);
-         } catch (error) {
-            handleError(error);
-         }
-      });
+      .option("--reveal", "Show secret values unmasked")
+      .action(async (options) => run(ctx, (c) => new ListSettingsCommand(c, options.reveal)));
 
    config.command('clear')
       .description("Clear all data")
-      .action(async () => {
-         try {
-            const command = new ClearStoreCommand();
-            await command.execute();
-            process.exit(0);
-         } catch (error) {
-            handleError(error);
-         }
-      });
+      .action(async () => run(ctx, (c) => new ClearStoreCommand(c)));
 
    return config;
 }

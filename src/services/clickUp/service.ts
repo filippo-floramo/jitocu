@@ -1,67 +1,60 @@
-import { getJSONStore } from "../../store/JSONStore";
+import type { Store } from "../../store/store";
 import { ClickUpAPI } from "./api";
 import fuzzy from 'fuzzy';
 import { ClickUpTask, CreateTimeEntryPayload } from "./types";
 import { CLIError } from "../../errors";
 import { mapTimeEntries } from "../../helpers/mapTimeEntries";
-
-
+import type { JiraIssueChoiceValue } from "../jira/types";
 
 export class ClickUpService {
-   private api!: ClickUpAPI;
-   private store = getJSONStore();
-   public static instance: ClickUpService
+   private api: ClickUpAPI | null = null;
 
-   private constructor() { }
+   constructor(private store: Store) { }
 
-   private async initialize(): Promise<void> {
-      const workspaceId = await this.store.getPath("settings.clickUp.workspaceId") as string;
-      const apiToken = await this.store.getPath("settings.clickUp.apiToken") as string;
-      this.api = new ClickUpAPI({ workspaceId, apiToken })
-   }
-
-   public static async getInstance(): Promise<ClickUpService> {
-      if (!ClickUpService.instance) {
-         const newService = new ClickUpService();
-         await newService.initialize();
-         ClickUpService.instance = newService
+   private getApi(): ClickUpAPI {
+      if (!this.api) {
+         const workspaceId = this.store.get("settings.clickUp.workspaceId") as string;
+         const apiToken = this.store.get("settings.clickUp.apiToken") as string;
+         this.api = new ClickUpAPI({ workspaceId, apiToken })
       }
-      return ClickUpService.instance
+      return this.api;
    }
 
-   public async createTaskAssignedToMe(issue: string, listId: string): Promise<ClickUpTask> {
-      const user = await this.api.getAuthorizedUser()
-      const myTasks = await this.api.getTasksByListId(listId, String(user.id));
-      const isIssueAlreadyCopied = !!myTasks.find((tsk) => tsk.name === issue)
+   public async createTaskAssignedToMe(issue: JiraIssueChoiceValue, listId: string): Promise<ClickUpTask> {
+      const user = await this.getApi().getAuthorizedUser()
+      const myTasks = await this.getApi().getTasksByListId(listId, String(user.id));
+      const isIssueAlreadyCopied = myTasks.some(
+         (tsk) => tsk.name === issue.key || tsk.name.startsWith(`${issue.key} - `)
+      );
 
       if (isIssueAlreadyCopied) {
-         throw new CLIError(`Issue "${issue}" already exists in this list. Delete the existing task or use a different issue.`);
+         throw new CLIError(`Issue "${issue.key}" already exists in this list. Delete the existing task or use a different issue.`);
       }
-      return await this.api.createTaskByListId(issue, listId, user.id)
+      return await this.getApi().createTaskByListId(`${issue.key} - ${issue.summary}`, listId, user.id)
    }
 
    public async getTimeEntries(range: { start: number, end: number }) {
-      const entries = await this.api.getTimeEntries(range)
+      const entries = await this.getApi().getTimeEntries(range)
 
       return mapTimeEntries(entries)
    }
 
    public async createTimeEntry(body: CreateTimeEntryPayload) {
-      return await this.api.createTimeEntry(body)
+      return await this.getApi().createTimeEntry(body)
    }
 
    public async getTasksByListId(listId: string) {
-      const user = await this.api.getAuthorizedUser()
-      const myTasks = await this.api.getTasksByListId(listId, String(user.id));
+      const user = await this.getApi().getAuthorizedUser()
+      const myTasks = await this.getApi().getTasksByListId(listId, String(user.id));
       return myTasks
    }
 
    public async getMySharedFolders() {
-      return await this.api.getSharedFolders()
+      return await this.getApi().getSharedFolders()
    }
 
    public async getListByName(listName: string) {
-      const folders = await this.api.getSharedFolders();
+      const folders = await this.getApi().getSharedFolders();
 
       const mapped = folders.flatMap((fold) => {
          const listNames = fold.lists.map((list) => {

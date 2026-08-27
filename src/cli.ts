@@ -3,7 +3,8 @@ import { configCommand } from "./commands/config";
 import { createTicketCommand } from "./commands/create";
 import { timeCommand } from "./commands/time";
 import { DefaultCLICommand } from "./commands/default";
-import { handleError } from "./errors/handleError";
+import { createContext } from "./context";
+import { run } from "./commands/shared/run";
 
 const program = new Command();
 
@@ -12,18 +13,12 @@ program
   .description("Copy Jira issues assigned to you to ClickUp")
   .version("0.1.0");
 
-program.addCommand(configCommand())
-program.addCommand(createTicketCommand())
-program.addCommand(timeCommand())
+const ctx = await createContext();
 
-program.action(async () => {
-  try {
-    const command = new DefaultCLICommand();
-    await command.execute()
-    process.exit(0)
-  } catch (error) {
-    handleError(error)
-  }
-});
+program.addCommand(configCommand(ctx))
+program.addCommand(createTicketCommand(ctx))
+program.addCommand(timeCommand(ctx))
+
+program.action(async () => run(ctx, (c) => new DefaultCLICommand(c)));
 
 program.parse();

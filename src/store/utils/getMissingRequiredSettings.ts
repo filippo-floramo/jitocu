@@ -1,5 +1,5 @@
 import { baseSettingsPath } from "../constants";
-import { getJSONStore } from "../JSONStore";
+import type { Store } from "../store";
 import { MandatorySettingsPath } from "../types";
 
 
@@ -11,12 +11,11 @@ const mandatorySettingsPaths: MandatorySettingsPath[] = [
    "clickUp.apiToken"
 ]
 
-export async function getMissingRequiredSettings(): Promise<MandatorySettingsPath[]> {
-   const store = getJSONStore();
+export function getMissingRequiredSettings(store: Store): MandatorySettingsPath[] {
    let missing: MandatorySettingsPath[] = [];
 
    for (const path of mandatorySettingsPaths) {
-      if (!(await store.hasPath(`${baseSettingsPath}.${path}`))) {
+      if (!store.has(`${baseSettingsPath}.${path}` as any)) {
          missing.push(path)
       }
    }

@@ -1,6 +1,7 @@
 import { select, input, search, confirm } from "@inquirer/prompts";
 import { ConfigError, CLIError } from "../../errors";
-import { ClickUpFolder, ClickUpService, ClickUpTask } from "../../services/clickUp";
+import { ClickUpFolder, ClickUpTask } from "../../services/clickUp";
+import type { AppContext } from "../../context";
 import { getMissingRequiredSettings } from "../../store/utils/getMissingRequiredSettings";
 import { showMissingSettignsPaths } from "../../store/utils/showMissingSettingsPaths";
 import { getWeeksRange, withSpinner, parseRanges, getSelectedDate } from "../../helpers";
@@ -14,13 +15,16 @@ import chalk from "chalk";
 import fuzzy from "fuzzy";
 
 export class DefaultTimeCommand implements CLICommand {
+   constructor(
+      private ctx: AppContext
+   ) { }
 
    private async parseAndSubmit({ selectedTask, targetDate }: {
       selectedTask: Pick<ClickUpTask, "id" | "name">,
       targetDate: Date
    }) {
 
-      const clickUpSrv = await ClickUpService.getInstance()
+      const clickUpSrv = this.ctx.clickUp
       const dslInput = await input({
          message: `Enter time for ${selectedTask.name} on ${formatDate(targetDate, { weekday: true, day: true, month: true })}:`,
          validate: (input) => {
@@ -28,7 +32,7 @@ export class DefaultTimeCommand implements CLICommand {
             try {
                parseRanges(input, targetDate)
                return true
-            } catch (error) {
+            } catch {
                return `Invalid time format. Use: "from 9am to 5pm" or "from 9am duration 4h"`
             }
          }
@@ -53,7 +57,7 @@ export class DefaultTimeCommand implements CLICommand {
    }
 
    private async getTimeEntryFromTask() {
-      const clickUpSrv = await ClickUpService.getInstance()
+      const clickUpSrv = this.ctx.clickUp
       const folders: ClickUpFolder[] = await withSpinner(
          async () => await clickUpSrv.getMySharedFolders(),
          {
@@ -107,7 +111,7 @@ export class DefaultTimeCommand implements CLICommand {
    }
 
    private async getTimeSheetAnswer() {
-      const clickUpSrv = await ClickUpService.getInstance()
+      const clickUpSrv = this.ctx.clickUp
       const range = getWeeksRange()
 
       const selectedRange = await select({
@@ -131,7 +135,7 @@ export class DefaultTimeCommand implements CLICommand {
    }
 
    async execute() {
-      const missing = await getMissingRequiredSettings();
+      const missing = getMissingRequiredSettings(this.ctx.store);
 
       if (missing.length > 0) {
          throw new ConfigError("Missing configuration:", () => showMissingSettignsPaths(missing))

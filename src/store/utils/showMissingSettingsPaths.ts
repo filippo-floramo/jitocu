@@ -3,9 +3,9 @@ import { settingPathsMap } from "../constants";
 import { MandatorySettingsPath } from "../types";
 
 export function showMissingSettignsPaths(missing: MandatorySettingsPath[]) {
-   missing.forEach(path =>
+   missing.forEach(path => {
       console.log(`   - ${settingPathsMap[path]}` + chalk.dim(` path: ${path}`))
-   );
+   });
    console.log();
    console.log(chalk.blue("Set these values with:"));
    console.log("   jitocu config set <path> <value>");

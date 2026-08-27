@@ -1,9 +1,8 @@
 import { CLICommand } from "../shared/command.interface";
-import { JiraIssueChoice, JiraService } from "../../services/jira";
+import type { AppContext } from "../../context";
 import { getMissingRequiredSettings } from "../../store/utils/getMissingRequiredSettings";
 import { showMissingSettignsPaths } from "../../store/utils/showMissingSettingsPaths";
 import { select } from "@inquirer/prompts";
-import { ClickUpService } from "../../services/clickUp";
 import { withSpinner } from "../../helpers/withSpinner";
 import { ConfigError } from "../../errors";
 
@@ -15,19 +14,22 @@ interface CreateTicketOptions {
 export class CreateTicketCommand implements CLICommand {
    private options: CreateTicketOptions;
 
-   constructor(opts: CreateTicketOptions) {
+   constructor(
+      private ctx: AppContext,
+      opts: CreateTicketOptions
+   ) {
       this.options = opts
    }
 
    public async execute() {
-      const missing = await getMissingRequiredSettings();
+      const missing = getMissingRequiredSettings(this.ctx.store);
 
       if (missing.length > 0) {
          throw new ConfigError("Missing configuration:", () => showMissingSettignsPaths(missing))
       }
 
-      const jiraSrv = await JiraService.getInstance();
-      const clickUpSrv = await ClickUpService.getInstance();
+      const jiraSrv = this.ctx.jira;
+      const clickUpSrv = this.ctx.clickUp;
 
       const jiraIssues = await withSpinner(
          async () => await jiraSrv.getMyIssuesByKey(this.options.key),
@@ -55,15 +57,17 @@ export class CreateTicketCommand implements CLICommand {
 
       const selectedList = await select({ message: "Found these lists", choices: lists });
 
+      const resLabel = `${res.key} - ${res.summary}`;
+
       await withSpinner(
          async () => await clickUpSrv.createTaskAssignedToMe(res, selectedList),
          {
-            text: `Creating task: ${res}`,
+            text: `Creating task: ${resLabel}`,
             successText: "Task created",
-            failText: `Failed to create task: ${res}`
+            failText: `Failed to create task: ${resLabel}`
          }
       );
 
-      console.log(`✅ Successfully created task ${res} in ClickUp!`);
+      console.log(`✅ Successfully created task ${resLabel} in ClickUp!`);
    }
 }

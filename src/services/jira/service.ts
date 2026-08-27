@@ -1,37 +1,31 @@
-import { getJSONStore } from "../../store/JSONStore";
+import type { Store } from "../../store/store";
 import { JiraAPI } from "./api";
 
 export class JiraService {
-   private api!: JiraAPI;
-   private store = getJSONStore();
-   public static instance: JiraService
+   private api: JiraAPI | null = null;
 
-   private constructor() { }
+   constructor(private store: Store) { }
 
-   public static async getInstance() {
-      if (!JiraService.instance) {
-         const newService = new JiraService();
-         await newService.initialize();
-         JiraService.instance = newService
+   private getApi(): JiraAPI {
+      if (!this.api) {
+         const domain = this.store.get("settings.jira.domain") as string;
+         const email = this.store.get("settings.jira.email") as string;
+         const apiToken = this.store.get("settings.jira.apiToken") as string;
+
+         this.api = new JiraAPI({
+            domain,
+            email,
+            apiToken
+         })
       }
-      return JiraService.instance
+      return this.api;
    }
-   public async initialize() {
-      const domain = await this.store.getPath("settings.jira.domain") as string;
-      const email = await this.store.getPath("settings.jira.email") as string;
-      const apiToken = await this.store.getPath("settings.jira.apiToken") as string;
 
-      this.api = new JiraAPI({
-         domain,
-         email,
-         apiToken
-      })
-   }
    public async getMyIssuesByKey(key: string) {
-      return await this.api.fetchJiraIssues(key)
+      return await this.getApi().fetchJiraIssues(key)
    }
 
    public async getMyIssues() {
-      return await this.api.fetchJiraIssues();
+      return await this.getApi().fetchJiraIssues();
    }
 }

@@ -1,6 +1,11 @@
+export interface JiraIssueChoiceValue {
+   key: string;
+   summary: string;
+}
+
 export interface JiraIssueChoice {
    name: string;
-   value: string;
+   value: JiraIssueChoiceValue;
 }
 
 export interface JiraIssue {

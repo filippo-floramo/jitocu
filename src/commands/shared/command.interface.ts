@@ -1,4 +1,4 @@
 
-export interface CLICommand<TOptions = void> {
+export interface CLICommand {
    execute(): Promise<void>
 }

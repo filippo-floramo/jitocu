@@ -1,12 +1,16 @@
 import { CLICommand } from "../shared/command.interface";
-import { getJSONStore } from "../../store/JSONStore";
+import type { AppContext } from "../../context";
+import { maskSettings } from "../../store/utils/maskSecrets";
 
 export class ListSettingsCommand implements CLICommand {
-   public async execute(): Promise<void> {
-      const store = getJSONStore();
+   constructor(
+      private ctx: AppContext,
+      private reveal: boolean = false
+   ) { }
 
-      const config = await store.getAll();
-      console.log(config);
+   public async execute(): Promise<void> {
+      const config = this.ctx.store.store;
+      console.log(this.reveal ? config : maskSettings(config));
       return
    }
 }

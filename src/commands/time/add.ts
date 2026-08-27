@@ -1,8 +1,9 @@
 import { CLICommand } from "../shared/command.interface";
+import type { AppContext } from "../../context";
 import { getMissingRequiredSettings } from "../../store/utils/getMissingRequiredSettings";
 import { showMissingSettignsPaths } from "../../store/utils/showMissingSettingsPaths";
 import { input, search, select } from "@inquirer/prompts";
-import { ClickUpFolder, ClickUpService, ClickUpTask } from "../../services/clickUp";
+import { ClickUpFolder, ClickUpTask } from "../../services/clickUp";
 import { withSpinner } from "../../helpers/withSpinner";
 import { CLIError, ConfigError } from "../../errors";
 import { datePrompt } from "../../prompts/datePicker";
@@ -22,18 +23,21 @@ interface CreateTicketOptions {
 export class AddTimeEntryCommand implements CLICommand {
    private options: CreateTicketOptions;
 
-   constructor(opts: CreateTicketOptions) {
+   constructor(
+      private ctx: AppContext,
+      opts: CreateTicketOptions
+   ) {
       this.options = opts
    }
 
    public async execute() {
-      const missing = await getMissingRequiredSettings();
+      const missing = getMissingRequiredSettings(this.ctx.store);
 
       if (missing.length > 0) {
          throw new ConfigError("Missing configuration:", () => showMissingSettignsPaths(missing))
       }
 
-      const clickUpSrv = await ClickUpService.getInstance();
+      const clickUpSrv = this.ctx.clickUp;
       let listId = ''
 
       if (this.options.list) {
@@ -105,7 +109,7 @@ export class AddTimeEntryCommand implements CLICommand {
             try {
                parseRanges(input, targetDate)
                return true
-            } catch (error) {
+            } catch {
                return `Invalid time format. Use: "from 9am to 5pm" or "from 9am duration 4h"`
             }
          }

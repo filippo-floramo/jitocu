@@ -1,23 +1,24 @@
 import { CLICommand } from "../shared/command.interface";
-import { getJSONStore } from "../../store/JSONStore";
+import type { AppContext } from "../../context";
 import { baseSettingsPath } from "../../store/constants";
 import { validateSettingPath } from "../../store/utils/validateSettingPath";
-import chalk from "chalk";
-import { CLIError, ConfigError } from "../../errors";
+import { ConfigError } from "../../errors";
 import { showValidPaths } from "../../store/utils/showValidPaths";
+import { maskValueAtPath } from "../../store/utils/maskSecrets";
 
 export class GetSettingsCommand implements CLICommand {
    constructor(
-      private path: string
+      private ctx: AppContext,
+      private path: string,
+      private reveal: boolean = false
    ) { }
 
    public async execute(): Promise<void> {
-      const store = getJSONStore();
       if (!validateSettingPath(this.path)) {
          throw new ConfigError(`Invalid Path ${this.path}`, showValidPaths)
       }
       const fullPath = `${baseSettingsPath}.${this.path}`;
-      const value = await store.getPath(fullPath as any);
-      console.log(value);
+      const value = this.ctx.store.get(fullPath as any);
+      console.log(this.reveal ? value : maskValueAtPath(fullPath, value));
    }
 }
