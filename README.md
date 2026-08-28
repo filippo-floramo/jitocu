@@ -207,7 +207,7 @@ jitocu time add -l "Development Tasks"
 - **Language**: TypeScript
 - **CLI Framework**: [Commander.js](https://github.com/tj/commander.js)
 - **Prompts**: [@inquirer/prompts](https://github.com/SBoudrias/Inquirer.js)
-- **Fuzzy Search**: [fuzzy](https://github.com/mattyork/fuzzy)
+- **Fuzzy Search**: [fzf](https://github.com/ajitid/fzf-for-js) (fzf algorithm port)
 - **Loading Indicators**: [ora](https://github.com/sindresorhus/ora)
 - **Styling**: [chalk](https://github.com/chalk/chalk)
 
