@@ -1,7 +1,6 @@
 import type { Store } from "../../store/store";
 import { ClickUpAPI } from "./api";
-import fuzzy from 'fuzzy';
-import { ClickUpTask, CreateTimeEntryPayload } from "./types";
+import { ClickUpFlatList, ClickUpTask, CreateTimeEntryPayload } from "./types";
 import { CLIError } from "../../errors";
 import { mapTimeEntries } from "../../helpers/mapTimeEntries";
 import type { JiraIssueChoiceValue } from "../jira/types";
@@ -55,20 +54,15 @@ export class ClickUpService {
       return await this.getApi().getSharedFolders()
    }
 
-   public async getListByName(listName: string) {
+   /** Every shared list, flattened out of its folder and named "Folder -> List". */
+   public async getSharedLists(): Promise<ClickUpFlatList[]> {
       const folders = await this.getApi().getSharedFolders();
 
-      const mapped = folders.flatMap((fold) => {
-         const listNames = fold.lists.map((list) => {
-            return { name: `${fold.name} -> ${list.name}`, value: list.id }
-         })
-
-         return listNames
-      });
-
-      const res = fuzzy
-         .filter(listName, mapped, { extract: (val) => val.name })
-         .map((res) => res.original)
-      return res
+      return folders.flatMap((folder) =>
+         folder.lists.map((list) => ({
+            id: list.id,
+            name: `${folder.name} -> ${list.name}`
+         }))
+      );
    }
 }

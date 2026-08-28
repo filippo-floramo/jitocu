@@ -3,7 +3,7 @@ import { ClickUpFolder } from "../services/clickUp";
 import { JiraIssueChoice } from "../services/jira";
 import type { AppContext } from "../context";
 import { withSpinner } from "../helpers/withSpinner";
-import fuzzy from 'fuzzy';
+import { createFuzzySearcher } from "../helpers/fuzzySearch";
 import { CLICommand } from "./shared/command.interface";
 import { assertConfigured } from "./shared/assertConfigured";
 import { treeSelect } from "../prompts/treeSelect";
@@ -29,16 +29,14 @@ export class DefaultCLICommand implements CLICommand {
          }
       )
 
+      const searchIssues = createFuzzySearcher(jiraIssues, {
+         selector: (issue) => issue.name
+      });
+
       const answer = await search({
          message: "Select Jira issues",
          pageSize: 20,
-         source: async (input) => {
-            input = input || "";
-            const fuzzySearch = fuzzy.filter(input, jiraIssues, {
-               extract: (item) => item.name
-            });
-            return fuzzySearch.map((el) => el.original);
-         }
+         source: async (input) => searchIssues(input ?? "")
       });
 
       const folders: ClickUpFolder[] = await withSpinner(

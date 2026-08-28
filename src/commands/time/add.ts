@@ -1,9 +1,8 @@
-import { select } from "@inquirer/prompts";
 import type { AppContext } from "../../context";
-import { withSpinner } from "../../helpers/withSpinner";
 import { datePrompt } from "../../prompts/datePicker";
 import { assertConfigured } from "../shared/assertConfigured";
 import { CLICommand } from "../shared/command.interface";
+import { selectListByName } from "../shared/selectListByName";
 import { selectListFromTree, selectTaskFromList, submitTimeEntries } from "./timeEntryFlow";
 
 interface CreateTicketOptions {
@@ -26,16 +25,7 @@ export class AddTimeEntryCommand implements CLICommand {
          return await selectListFromTree(this.ctx)
       }
 
-      const lists = await withSpinner(
-         async () => await this.ctx.clickUp.getListByName(this.options.list),
-         {
-            text: "Fetching ClickUp folders...",
-            successText: "ClickUp folders loaded",
-            failText: "Failed to fetch ClickUp folders"
-         }
-      );
-
-      return await select({ message: "Found these lists", choices: lists });
+      return await selectListByName(this.ctx, this.options.list)
    }
 
    public async execute() {

@@ -11,9 +11,11 @@ import {
    isBackspaceKey,
    makeTheme,
    type Theme,
+   type KeypressEvent,
    Status,
 } from "@inquirer/core";
 import chalk from "chalk";
+import { createFuzzySearcher } from "../helpers/fuzzySearch";
 import { ClickUpFolder } from "../services/clickUp";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -43,6 +45,48 @@ type Row = FolderRow | ListRow;
 
 function getDisplayListName(folderName: string, listName: string): string {
    return listName === "List" ? `${folderName} - list` : listName;
+}
+
+// ─── Search index ─────────────────────────────────────────────────────────────
+
+type ListCandidate = {
+   listId: string;
+   /** Parent folder name and list name together, so either one can be typed. */
+   haystack: string;
+};
+
+/** Exported for tests. */
+export function listCandidates(folders: ClickUpFolder[]): ListCandidate[] {
+   return folders.flatMap((folder) =>
+      folder.lists.map((list) => ({
+         listId: list.id,
+         haystack: `${folder.name} ${getDisplayListName(folder.name, list.name)}`
+      }))
+   );
+}
+
+// ─── Search input ─────────────────────────────────────────────────────────────
+
+/**
+ * readline reports punctuation with no `name` at all and reports space as the
+ * named key "space", so neither can be recognised from `name`. The raw sequence
+ * is the only reliable source, and it is absent from the published event type.
+ */
+type RawKeypressEvent = KeypressEvent & { sequence?: string; meta?: boolean };
+
+/**
+ * The character a keypress should append to the query, or null if it is a
+ * control key. Exported for tests.
+ */
+export function printableChar(key: KeypressEvent): string | null {
+   const { sequence, meta } = key as RawKeypressEvent;
+
+   if (key.ctrl || meta) return null;
+   if (typeof sequence !== "string" || sequence.length !== 1) return null;
+   // Leaves out escape, enter and backspace/delete.
+   if (sequence < " " || sequence === "\x7f") return null;
+
+   return sequence;
 }
 
 // ─── Tree flattener ───────────────────────────────────────────────────────────
@@ -114,26 +158,36 @@ export const treeSelect = createPrompt<SelectedList, TreeSelectConfig>(
       const rows = useMemo(() => flattenFolders(folders), [folders]);
       const normalizedQuery = searchQuery.trim().toLowerCase();
 
-      // Filter rows based on search query
-      const filteredRows = useMemo(
-         () => normalizedQuery
-            ? flattenFolders(
-               folders
-                  .map((folder) => {
-                     const filteredLists = folder.lists.filter((list) => {
-                        const displayName = getDisplayListName(folder.name, list.name);
-                        return displayName.toLowerCase().includes(normalizedQuery);
-                     });
+      // Indexed once per folder set, then queried on every keystroke.
+      const searchLists = useMemo(
+         () => createFuzzySearcher(listCandidates(folders), {
+            selector: (candidate) => candidate.haystack,
+            extendedSearch: true
+         }),
+         [folders]
+      );
 
-                     return {
-                        ...folder,
-                        lists: filteredLists,
-                     };
-                  })
+      // Filter rows based on search query. Matching runs over the flat candidate
+      // list, but the surviving lists are regrouped so the tree keeps its own
+      // order rather than being reshuffled by relevance.
+      const filteredRows = useMemo(
+         () => {
+            if (!normalizedQuery) return rows;
+
+            const matchedListIds = new Set(
+               searchLists(normalizedQuery).map((candidate) => candidate.listId)
+            );
+
+            return flattenFolders(
+               folders
+                  .map((folder) => ({
+                     ...folder,
+                     lists: folder.lists.filter((list) => matchedListIds.has(list.id)),
+                  }))
                   .filter((folder) => folder.lists.length > 0)
-            )
-            : rows,
-         [normalizedQuery, folders, rows]
+            );
+         },
+         [normalizedQuery, folders, rows, searchLists]
       );
 
       const filteredSelectable = useMemo(() => selectableIndices(filteredRows), [filteredRows]);
@@ -181,9 +235,12 @@ export const treeSelect = createPrompt<SelectedList, TreeSelectConfig>(
          } else if (key.name === 'escape') {
             setSearchQuery("");
             setActiveSelectableIdx(0);
-         } else if (key.name && key.name.length === 1 && !key.ctrl) {
-            setSearchQuery(searchQuery + key.name);
-            setActiveSelectableIdx(0);
+         } else {
+            const char = printableChar(key);
+            if (char !== null) {
+               setSearchQuery(searchQuery + char);
+               setActiveSelectableIdx(0);
+            }
          }
       });
 

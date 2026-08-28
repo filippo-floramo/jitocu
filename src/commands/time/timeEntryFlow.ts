@@ -1,9 +1,8 @@
 import { input, search } from "@inquirer/prompts";
 import chalk from "chalk";
-import fuzzy from "fuzzy";
 import type { AppContext } from "../../context";
 import { CLIError } from "../../errors";
-import { parseRanges, withSpinner } from "../../helpers";
+import { createFuzzySearcher, parseRanges, withSpinner } from "../../helpers";
 import { formatDate } from "../../helpers/formatDate";
 import { truncate } from "../../helpers/truncate";
 import { SelectedList, treeSelect } from "../../prompts/treeSelect";
@@ -53,16 +52,14 @@ export async function selectTaskFromList(ctx: AppContext, listId: string): Promi
 
    const taskChoices = tasks.map((task) => ({ name: (task.name), value: task }))
 
+   const searchTasks = createFuzzySearcher(taskChoices, {
+      selector: (choice) => choice.name
+   });
+
    return await search({
       message: "Select ClickUp task",
       pageSize: 20,
-      source: async (input) => {
-         input = input || "";
-         const fuzzySearch = fuzzy.filter(input, taskChoices, {
-            extract: (item) => item.name
-         });
-         return fuzzySearch.map((el) => mapTask(el.original));
-      },
+      source: async (input) => searchTasks(input ?? "").map(mapTask),
       theme: {
          style: {
             highlight: chalk.rgb(0, 136, 255)

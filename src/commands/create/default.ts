@@ -4,6 +4,7 @@ import type { AppContext } from "../../context";
 import { select } from "@inquirer/prompts";
 import { withSpinner } from "../../helpers/withSpinner";
 import { CLIError } from "../../errors";
+import { selectListByName } from "../shared/selectListByName";
 
 interface CreateTicketOptions {
    key: string;
@@ -41,16 +42,7 @@ export class CreateTicketCommand implements CLICommand {
 
       const res = await select({ message: "Is this your issue?", choices: jiraIssues })
 
-      const lists = await withSpinner(
-         async () => await clickUpSrv.getListByName(this.options.list),
-         {
-            text: "Fetching ClickUp folders...",
-            successText: "ClickUp folders loaded",
-            failText: "Failed to fetch ClickUp folders"
-         }
-      );
-
-      const selectedList = await select({ message: "Found these lists", choices: lists });
+      const selectedList = await selectListByName(this.ctx, this.options.list);
 
       const resLabel = `${res.key} - ${res.summary}`;
 

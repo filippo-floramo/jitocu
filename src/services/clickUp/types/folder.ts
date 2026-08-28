@@ -8,3 +8,9 @@ export interface ClickUpFolder {
   name: string;
   lists: ClickUpList[];
 }
+
+/** A list lifted out of its folder, carrying the folder name in `name`. */
+export interface ClickUpFlatList {
+  id: string;
+  name: string;
+}
