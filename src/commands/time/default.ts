@@ -53,36 +53,35 @@ export class DefaultTimeCommand implements CLICommand {
       while (true) {
          const { timesheetAnswer, selectedRange } = await this.getTimeSheetAnswer()
 
-         if (timesheetAnswer.type === "action") {
-            if (timesheetAnswer.action === "close") {
-               console.log("Operation Cancelled.")
-               return
-            }
+         if (timesheetAnswer.type === "action" && timesheetAnswer.action === "close") {
+            console.log("Operation Cancelled.")
+            return
+         }
 
+         if (timesheetAnswer.type === "action") {
+            // "a" — pick the task from the folder tree first.
             const { targetDate, selectedTask } = await this.getTimeEntryFromTask()
             await submitTimeEntries(this.ctx, {
                targetDate,
                selectedTask
             })
-
-            const repeat = await confirm({
-               message: "Do you want to repeat?"
+         } else {
+            // Enter — the task and the day both come from the selected cell.
+            const selectedDate = getSelectedDate(selectedRange.start, timesheetAnswer.selection.day)
+            await submitTimeEntries(this.ctx, {
+               selectedTask: timesheetAnswer.selection.task,
+               targetDate: selectedDate
             })
+         }
 
-            if (repeat) {
-               continue
-            }
+         const repeat = await confirm({
+            message: "Add another time entry?"
+         })
 
+         if (!repeat) {
             console.log("have a nice day!")
             return
          }
-
-         const selectedDate = getSelectedDate(selectedRange.start, timesheetAnswer.selection.day)
-         await submitTimeEntries(this.ctx, {
-            selectedTask: timesheetAnswer.selection.task,
-            targetDate: selectedDate
-         })
-         return
       }
    }
 }
