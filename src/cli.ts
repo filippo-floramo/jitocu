@@ -6,7 +6,12 @@ import { DefaultCLICommand } from "./commands/default";
 import { createContext, type AppContext } from "./context";
 import { run } from "./commands/shared/run";
 import { handleError } from "./errors/handleError";
+import { installCancellationHandler } from "./errors/cancellation";
 import packageJson from "../package.json" with { type: "json" };
+
+// Registered before anything else so a Ctrl+C during store setup or a network
+// call exits as cleanly as one during a prompt.
+installCancellationHandler();
 
 const program = new Command();
 

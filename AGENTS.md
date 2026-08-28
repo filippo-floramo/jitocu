@@ -47,6 +47,10 @@ use, so `jitocu config` works with no credentials present.
   `ConfigError` / `APIError`; exit codes are 1/2/3. `commands/shared/run.ts`
   catches everything and calls `handleError`. Pass a callback as the error
   `context` to print extra guidance.
+- **Ctrl+C is not a failure.** `errors/cancellation.ts` owns it: `isCancellation`
+  detects @inquirer's `ExitPromptError`, `cancel()` restores the cursor, prints
+  "Cancelled." and exits 130. `handleError` and `withSpinner` already route
+  through it — new code should not print its own goodbye or swallow the error.
 - **Commands are classes** implementing `CLICommand { execute(): Promise<void> }`,
   constructed as `(ctx, opts?)`, always invoked through `run(ctx, make)`.
 - **Call `assertConfigured(ctx)` first** in any command that touches an API.

@@ -1,5 +1,6 @@
 // src/utils/spinner.ts
 import ora from 'ora';
+import { isCancellation } from '../errors/cancellation';
 
 export async function withSpinner<T>(
   operation: () => Promise<T>,
@@ -16,7 +17,13 @@ export async function withSpinner<T>(
     spinner.succeed(options?.successText);
     return result;
   } catch (error) {
-    spinner.fail(options?.failText);
+    // A cancelled prompt is not a failed operation: stopping clears the line so
+    // the only thing left on screen is the "Cancelled." note.
+    if (isCancellation(error)) {
+      spinner.stop();
+    } else {
+      spinner.fail(options?.failText);
+    }
     throw error;
   }
 }
