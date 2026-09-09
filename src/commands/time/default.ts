@@ -4,6 +4,7 @@ import { getSelectedDate, getWeeksRange, withSpinner } from "../../helpers";
 import { datePrompt } from "../../prompts/datePicker";
 import timesheetTable from "../../prompts/timesheetTable";
 import { assertConfigured } from "../shared/assertConfigured";
+import { clickUpSettingsPaths } from "../../store/constants";
 import { CLICommand } from "../shared/command.interface";
 import { selectListFromTree, selectTaskFromList, submitTimeEntries } from "./timeEntryFlow";
 
@@ -48,7 +49,7 @@ export class DefaultTimeCommand implements CLICommand {
    }
 
    async execute() {
-      assertConfigured(this.ctx);
+      assertConfigured(this.ctx, clickUpSettingsPaths);
 
       while (true) {
          const { timesheetAnswer, selectedRange } = await this.getTimeSheetAnswer()

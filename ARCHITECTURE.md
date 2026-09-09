@@ -119,19 +119,20 @@ throw into `handleError`. This is why command code contains almost no
 error handling: **throwing a `CLIError` is the idiomatic way to fail.**
 
 `commands/shared/assertConfigured.ts` is the shared precondition — every command
-that touches an API calls it first, and it throws a `ConfigError` listing the
-unset paths.
+that touches an API calls it first with the setting paths it needs, and it
+throws a `ConfigError` listing the unset ones. The path groups live in
+`store/constants` (`clickUpSettingsPaths`, `jiraSettingsPaths`).
 
 ### Command map
 
 | Invocation | Class | Notes |
 | --- | --- | --- |
 | `jitocu` | `commands/default.ts` → `DefaultCLICommand` | Fuzzy-search Jira issues → tree-select a ClickUp list → create task. |
-| `jitocu config` | `commands/config/default.ts` | Detects missing settings, offers interactive setup (`password` prompt for tokens). |
+| `jitocu config` | `commands/config/default.ts` | Reports readiness per feature, offers interactive setup of the ones you pick (`password` prompt for tokens). |
 | `jitocu config set/get/list/clear` | `commands/config/*.ts` | `get`/`list` accept `--reveal`; secrets masked by default. |
 | `jitocu create -k KEY -l LIST` | `commands/create/default.ts` | Non-interactive-ish path; still confirms the issue and list. |
-| `jitocu time` | `commands/time/default.ts` → `DefaultTimeCommand` | Week range → timesheet table → add entries in a loop. |
-| `jitocu time add [-l LIST]` | `commands/time/add.ts` | Skips the timesheet; goes straight to task + date + time entry. |
+| `jitocu time` | `commands/time/default.ts` → `DefaultTimeCommand` | Week range → timesheet table → add entries in a loop. ClickUp settings only. |
+| `jitocu time add [-l LIST]` | `commands/time/add.ts` | Skips the timesheet; goes straight to task + date + time entry. ClickUp settings only. |
 
 ### Shared command-layer pieces
 
@@ -230,6 +231,13 @@ jira.domain  jira.email  jira.apiToken  clickUp.workspaceId  clickUp.apiToken
 `MandatorySettingsPath` is the source of truth; `settingPathsMap` gives each a
 human label, and `Record<SettingPath, …>` keys the validation rules — so adding
 a setting is a type error until every table is updated.
+
+Mandatory means mandatory *for the commands that use it*, not globally.
+`constants/index.ts` groups the paths into `settingsFeatures` (ClickUp, Jira),
+each with a label and what it unlocks. `assertConfigured(ctx, paths)` takes the
+groups a command actually calls — `time` and `time add` require ClickUp only,
+`create` and the default command require both — and `jitocu config` reports
+readiness feature by feature.
 
 Four concerns, deliberately separated:
 

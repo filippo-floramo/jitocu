@@ -6,6 +6,7 @@ import { withSpinner } from "../helpers/withSpinner";
 import { createFuzzySearcher } from "../helpers/fuzzySearch";
 import { CLICommand } from "./shared/command.interface";
 import { assertConfigured } from "./shared/assertConfigured";
+import { clickUpSettingsPaths, jiraSettingsPaths } from "../store/constants";
 import { treeSelect } from "../prompts/treeSelect";
 
 
@@ -15,7 +16,7 @@ export class DefaultCLICommand implements CLICommand {
    ) { }
 
    async execute(): Promise<void> {
-      assertConfigured(this.ctx);
+      assertConfigured(this.ctx, [...clickUpSettingsPaths, ...jiraSettingsPaths]);
 
       const jiraSrv = this.ctx.jira;
       const clickUpSrv = this.ctx.clickUp;

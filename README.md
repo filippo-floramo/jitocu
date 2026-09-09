@@ -1,12 +1,26 @@
 # jitocu
 
-**Jira to ClickUp** - Copy Jira issues assigned to you to ClickUp and manage time entries with an interactive terminal UI.
+An interactive terminal UI for two ClickUp chores: filling in your timesheet,
+and copying the Jira issues assigned to you into ClickUp lists.
+
+- **Timesheet** - `jitocu time` opens a week grid of your ClickUp time entries,
+  navigable with the arrow keys or `hjkl`, and time is entered in plain language
+  (`from 9:00 to 12:00 and from 13:00 duration 4h`). ClickUp only, no Jira needed.
+- **Jira to ClickUp** - `jitocu` fuzzy-searches the Jira issues assigned to you
+  and copies the one you pick into a ClickUp folder and list; `jitocu create -k
+  PROJ-123 -l "My List"` does the same in one non-interactive shot.
+- **Configuration** - `jitocu config` reports readiness per feature and sets up
+  what is missing, credentials stored locally in `~/.config/jitocu/config.json`.
+
+Credentials are required per feature, not globally: the time commands ask only
+for ClickUp settings, and the Jira credentials are checked only by the commands
+that read Jira.
 
 ## Prerequisites
 
 - [Bun](https://bun.sh) runtime installed (required for development only)
-- Jira account with API access
 - ClickUp account with API access
+- Jira account with API access (only for `jitocu` and `jitocu create`)
 
 ## Installation
 
@@ -60,7 +74,7 @@ jitocu config
 
 ### Configuration
 
-Configure your Jira and ClickUp credentials:
+Configure your ClickUp and Jira credentials:
 
 ```bash
 jitocu config
@@ -68,9 +82,10 @@ jitocu config
 
 The config command will:
 
-- Check for missing settings
+- Report readiness per feature (ClickUp, Jira) and what each one is needed for
 - **Prompt you to set them up interactively** if any are missing
-- Guide you through the setup process
+- Let you pick which features to set up, so a ClickUp-only setup is enough for
+  `jitocu time`
 
 **Manual configuration (optional):**
 

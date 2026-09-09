@@ -1,5 +1,6 @@
 import { CLICommand } from "../shared/command.interface";
 import { assertConfigured } from "../shared/assertConfigured";
+import { clickUpSettingsPaths, jiraSettingsPaths } from "../../store/constants";
 import type { AppContext } from "../../context";
 import { select } from "@inquirer/prompts";
 import { withSpinner } from "../../helpers/withSpinner";
@@ -22,7 +23,7 @@ export class CreateTicketCommand implements CLICommand {
    }
 
    public async execute() {
-      assertConfigured(this.ctx);
+      assertConfigured(this.ctx, [...clickUpSettingsPaths, ...jiraSettingsPaths]);
 
       const jiraSrv = this.ctx.jira;
       const clickUpSrv = this.ctx.clickUp;

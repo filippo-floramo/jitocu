@@ -1,6 +1,7 @@
 import type { AppContext } from "../../context";
 import { datePrompt } from "../../prompts/datePicker";
 import { assertConfigured } from "../shared/assertConfigured";
+import { clickUpSettingsPaths } from "../../store/constants";
 import { CLICommand } from "../shared/command.interface";
 import { selectListByName } from "../shared/selectListByName";
 import { selectListFromTree, selectTaskFromList, submitTimeEntries } from "./timeEntryFlow";
@@ -29,7 +30,7 @@ export class AddTimeEntryCommand implements CLICommand {
    }
 
    public async execute() {
-      assertConfigured(this.ctx);
+      assertConfigured(this.ctx, clickUpSettingsPaths);
 
       const listId = await this.resolveListId()
       const selectedTask = await selectTaskFromList(this.ctx, listId)
