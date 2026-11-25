@@ -26,14 +26,15 @@ export class ClickUpAPI {
       this.apiToken = apiToken
    }
 
-   public async createTaskByListId(issue: string, listId: string, userId?: number): Promise<ClickUpTask> {
+   public async createTaskByListId(issue: string, listId: string, userId?: number, markdownContent?: string): Promise<ClickUpTask> {
       if (!listId) {
          throw new CLIError('Missing ClickUp List Id');
       }
       const url = `${this.baseUrl}/list/${listId}/task`;
       const taskData: ClickUpCreateTaskRequest = {
          name: issue,
-         assignees: userId ? [Number(userId)] : []
+         assignees: userId ? [Number(userId)] : [],
+         markdown_content: markdownContent
       };
 
       const response = await apiFetch("ClickUp", url, {

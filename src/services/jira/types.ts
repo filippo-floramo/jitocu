@@ -1,6 +1,8 @@
 export interface JiraIssueChoiceValue {
    key: string;
    summary: string;
+   /** Browser link to the issue. */
+   url: string;
 }
 
 export interface JiraIssueChoice {

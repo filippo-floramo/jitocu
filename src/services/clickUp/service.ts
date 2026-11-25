@@ -31,7 +31,12 @@ export class ClickUpService {
       if (isIssueAlreadyCopied) {
          throw new CLIError(`Issue "${issue.key}" already exists in this list. Delete the existing task or use a different issue.`);
       }
-      return await this.getApi().createTaskByListId(`${issue.key} - ${issue.summary}`, listId, user.id)
+      return await this.getApi().createTaskByListId(
+         `${issue.key} - ${issue.summary}`,
+         listId,
+         user.id,
+         `[${issue.key}](${issue.url})`
+      )
    }
 
    public async getTimeEntries(range: { start: number, end: number }) {

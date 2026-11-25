@@ -36,7 +36,7 @@ describe('JiraService', () => {
       }));
    }
 
-   test('getMyIssues maps Jira issues to structured {key, summary} choices', async () => {
+   test('getMyIssues maps Jira issues to structured {key, summary, url} choices', async () => {
       globalThis.fetch = mock(async () => new Response(
          JSON.stringify(jiraSearchResponse([{ key: 'PROJ-1', summary: 'Fix the bug' }])),
          { status: 200 }
@@ -45,7 +45,7 @@ describe('JiraService', () => {
       const issues = await makeService().getMyIssues();
 
       expect(issues).toEqual([
-         { name: 'PROJ-1 - Fix the bug', value: { key: 'PROJ-1', summary: 'Fix the bug' } }
+         { name: 'PROJ-1 - Fix the bug', value: { key: 'PROJ-1', summary: 'Fix the bug', url: 'https://example.atlassian.net/browse/PROJ-1' } }
       ]);
    });
 
